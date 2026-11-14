@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a56b0">
+<title>施工日志</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--blue:#1a56b0;--blue2:#e8f0fc;--line:#d9e2ef;--txt:#22303f;--mut:#7a8aa0;--red:#d43a3a;--bg:#f2f5f9}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{margin:0;font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--txt);background:var(--bg)}
+header{position:sticky;top:0;z-index:50;background:var(--blue);color:#fff;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+header .ttl{font-weight:700;font-size:17px;flex:1;min-width:90px}
+header button{border:0;border-radius:8px;padding:8px 12px;font-size:14px;background:rgba(255,255,255,.18);color:#fff}
+header button.pri{background:#ffb400;color:#4a3200;font-weight:700}
+#menu{position:absolute;right:8px;top:52px;background:#fff;color:var(--txt);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);display:flex;flex-direction:column;min-width:170px;overflow:hidden}
+#menu button{background:#fff;color:var(--txt);text-align:left;padding:11px 14px;border-radius:0;border-bottom:1px solid var(--line)}
+main{max-width:760px;margin:0 auto;padding:10px 10px 90px}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:visible}
+summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:15px;color:var(--blue);list-style:none;display:flex;align-items:center}
+summary::before{content:"▸";margin-right:8px;transition:.15s}
+details[open]>summary::before{transform:rotate(90deg)}
+.sec{padding:4px 12px 14px}
+h4{margin:14px 0 6px;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h4 .add{margin-left:auto}
+button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-size:13px;color:var(--txt)}
+button.add{background:var(--blue2);color:var(--blue);border-color:var(--blue)}
+button.del{color:var(--red);border-color:#f0caca;padding:4px 8px}
+button.mini{padding:3px 8px;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid.c3{grid-template-columns:1fr 1fr 1fr}
+.fld{display:flex;flex-direction:column;gap:3px;min-width:0}
+.fld>label{font-size:12px;color:var(--mut)}
+.fld.full{grid-column:1/-1}
+input,select,textarea{font:14px/1.5 inherit;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue2);border-color:var(--blue)}
+input[readonly]{background:#f4f6f9;color:var(--mut)}
+textarea{resize:vertical;min-height:56px}
+.row{border:1px dashed var(--line);border-radius:10px;padding:10px;margin-bottom:8px;background:#fbfcfe;position:relative}
+.row .rhead{display:flex;align-items:center;margin-bottom:6px;font-size:12px;color:var(--mut)}
+.row .rhead .del{margin-left:auto}
+.combo{position:relative}
+.combo input{padding-right:26px}
+.combo::after{content:"▾";position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;font-size:12px}
+.pop{position:absolute;left:0;right:0;top:calc(100% + 2px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:260px;overflow:auto;z-index:60}
+.pop .grp{font-size:11px;color:var(--mut);padding:5px 10px 2px;background:#f7f9fc;position:sticky;top:0}
+.pop .it{padding:8px 10px;font-size:14px;border-bottom:1px solid #f0f3f8;display:flex;gap:6px;align-items:center}
+.pop .it:active,.pop .it:hover{background:var(--blue2)}
+.pop .it .tag{font-size:10px;background:#ffe9c2;color:#8a5b00;border-radius:4px;padding:0 4px;flex:none}
+.pop .it .sub{font-size:11px;color:var(--mut);margin-left:auto;flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop .addnew{color:var(--blue);font-weight:600}
+.pop .empty{padding:10px;color:var(--mut);font-size:13px}
+.hintbox{background:#fff8e6;border:1px solid #f0dfa8;border-radius:10px;padding:8px 12px;font-size:13px;color:#7a5b00;margin-bottom:10px}
+.hintbox:empty{display:none}
+.badge{display:inline-block;background:var(--red);color:#fff;font-size:11px;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.chk{display:flex;align-items:center;gap:6px;font-size:14px}
+.chk input{width:auto}
+.rangewrap{display:flex;align-items:center;gap:8px}
+.rangewrap input[type=range]{flex:1;padding:0}
+.rangewrap output{font-size:13px;color:var(--blue);min-width:42px;text-align:right}
+#histList .hitem{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:9px 2px;font-size:13px;flex-wrap:wrap}
+#histList .hitem b{color:var(--blue)}
+#histList .hitem .ops{margin-left:auto;display:flex;gap:6px}
+#dictList{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:8px}
+#dictList .ditem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid #f0f3f8;font-size:13px}
+#dictList .ditem.off{opacity:.45}
+#dictList .ditem .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#modal{position:fixed;inset:0;background:rgba(10,20,35,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px}
+#modal .box{background:#fff;border-radius:14px;width:100%;max-width:680px;max-height:92vh;display:flex;flex-direction:column;padding:14px;gap:10px}
+#modal textarea{flex:1;min-height:46vh;font-size:13px;line-height:1.7;white-space:pre}
+#modal .mops{display:flex;gap:8px;flex-wrap:wrap}
+#modal .mops button{flex:1;padding:10px}
+#modal .mops .pri{background:var(--blue);color:#fff;border-color:var(--blue)}
+#toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#22303f;color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:.25s;pointer-events:none;max-width:88vw;text-align:center}
+#toast.show{opacity:.95}
+#toast.err{background:var(--red)}
+.errmsg{color:var(--red);font-size:13px;margin:4px 0}
+.projname{font-size:12px;color:var(--mut);padding:0 2px 6px}
+#printArea{display:none}
+@media print{
+ body>*{display:none!important}
+ #printArea{display:block!important;font:12pt/1.9 "SimSun",serif;color:#000}
+ #printArea h1{text-align:center;font-size:16pt}
+ #printArea pre{white-space:pre-wrap;font:inherit}
+ #printArea .sign{display:flex;justify-content:space-between;margin-top:40px}
+ @page{size:A4;margin:20mm 18mm}
+}
+@media (max-width:480px){.grid.c3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="ttl">施工日志</div>
+  <button class="pri" id="btnGen">生成并复制</button>
+  <button id="btnSave">保存</button>
+  <button id="btnMenu">⋯</button>
+  <div id="menu" hidden>
+    <button id="mNew">新建日志</button>
+    <button id="mYest">复制昨日</button>
+    <button id="mHist">历史记录</button>
+    <button id="mSet">设置与字典库</button>
+    <button id="mExp">导出 JSON 备份</button>
+    <button id="mImp">导入 JSON 备份</button>
+  </div>
+</header>
+<main>
+<div class="projname" id="projName"></div>
+<div class="hintbox" id="hintBox"></div>
+
+<details open>
+<summary>① 日志信息</summary>
+<div class="sec">
+  <div class="grid">
+    <div class="fld"><label>编号（保存时自动生成）</label><input id="fNo" readonly placeholder="保存后生成"></div>
+    <div class="fld"><label>日期 *</label><input type="date" id="fDate"></div>
+    <div class="fld"><label>星期</label><input id="fWeek" readonly></div>
+    <div class="fld"><label>记录人 *</label><div id="cRecorder"></div></div>
+    <div class="fld full" id="backWrap" hidden><label>补记原因 *（日期非当天）</label><input id="fBack" placeholder="如：昨日夜间加班未及时记录"></div>
+    <div class="fld"><label>天气现象</label><div id="cW1"></div></div>
+    <div class="fld"><label class="chk" style="margin-top:20px"><input type="checkbox" id="fZhuan">转</label><div id="cW2" hidden></div></div>
+    <div class="fld"><label>风力等级</label><select id="fWind"><option value="">未填</option><option>0~3级</option><option>4级</option><option>5级</option><option>6级</option><option>7级</option><option>8级及以上</option></select></div>
+    <div class="fld"><label>气温（最低℃）</label><input type="number" id="fTmin" inputmode="decimal" placeholder="如 25"></div>
+    <div class="fld"><label>气温（最高℃）</label><input type="number" id="fTmax" inputmode="decimal" placeholder="如 32"></div>
+  </div>
+  <div class="errmsg" id="headErr"></div>
+</div>
+</details>
+
+<details open>
+<summary>② 施工进度与作业内容</summary>
+<div class="sec">
+  <h4>截至今日进度<button class="add" data-add="progress">＋ 添加</button></h4>
+  <div id="rows-progress"></div>
+  <h4>今日作业内容 *<button class="add" data-add="today">＋ 添加</button></h4>
+  <div id="rows-today"></div>
+  <h4>明日计划<button class="add" data-add="plan">＋ 添加</button></h4>
+  <div id="rows-plan"></div>
+  <h4>未完成事项<button class="add" data-add="undone">＋ 添加</button></h4>
+  <label class="chk"><input type="checkbox" id="undoneNone">无未完成事项</label>
+  <div id="rows-undone"></div>
+</div>
+</details>
+
+<details>
+<summary>③ 资源投入</summary>
+<div class="sec">
+  <h4>人员（按工种）<button class="mini" id="btnCrew">常用班组配置</button><button class="add" data-add="labor">＋ 添加</button></h4>
+  <div id="rows-labor"></div>
+  <div id="laborSum" style="font-size:13px;color:var(--blue)"></div>
+  <h4>机械<button class="add" data-add="machine">＋ 添加</button></h4>
+  <div id="rows-machine"></div>
+  <h4>材料<button class="add" data-add="material">＋ 添加</button></h4>
+  <div id="rows-material"></div>
+</div>
+</details>
+
+<details>
+<summary>④ 质量管理</summary>
+<div class="sec">
+  <h4>验收记录<button class="add" data-add="accept">＋ 添加</button></h4>
+  <div id="rows-accept"></div>
+  <h4>质量问题（点问题自动带出处理方法）<button class="add" data-add="quality">＋ 添加</button></h4>
+  <div id="rows-quality"></div>
+</div>
+</details>
+
+<details>
+<summary>⑤ 特殊情况</summary>
+<div class="sec">
+  <h4>停工 / 复工</h4>
+  <label class="chk"><input type="checkbox" id="stopNone" checked>无停工/复工</label>
+  <div id="stopForm" hidden>
+    <div class="grid">
+      <div class="fld full"><label>原因</label><input id="stopReason"></div>
+      <div class="fld"><label>开始时间</label><input id="stopStart" placeholder="如 2026-11-14 08:00"></div>
+      <div class="fld"><label>结束/复工时间</label><input id="stopEnd"></div>
+      <div class="fld full"><label>现场保护措施</label><textarea id="stopProtect"></textarea></div>
+    </div>
+  </div>
+  <h4>突发事件<button class="add" data-add="emergency">＋ 添加</button></h4>
+  <div id="rows-emergency"></div>
+  <h4>其他事项（参观/检查/文书等）<button class="mini" id="btnPhrase">常用短语库</button><button class="add" data-add="other">＋ 添加</button></h4>
+  <div id="rows-other"></div>
+</div>
+</details>
+
+<details id="secHistory">
+<summary>⑥ 历史记录</summary>
+<div class="sec"><div id="histList"></div></div>
+</details>
+
+<details id="secSettings">
+<summary>⑦ 设置与字典库</summary>
+<div class="sec">
+  <div class="grid">
+    <div class="fld full"><label>项目名称</label><input id="sProj"></div>
+    <div class="fld"><label>编号前缀</label><input id="sPrefix"></div>
+    <div class="fld"><label>默认记录人</label><div id="cDefRec"></div></div>
+  </div>
+  <h4>常用班组配置</h4>
+  <div id="crewList"></div>
+  <button class="add mini" id="btnCrewAdd">＋ 新增班组</button>
+  <h4>字典库维护（停用项历史保留、新建不可选）</h4>
+  <div class="grid">
+    <div class="fld"><label>选择字典</label><select id="dictSel"></select></div>
+    <div class="fld"><label>新增条目</label><div style="display:flex;gap:6px"><input id="dictNew" placeholder="名称"><button class="add" id="btnDictAdd" style="flex:none">添加</button></div></div>
+  </div>
+  <div id="dictList"></div>
+</div>
+</details>
+</main>
+
+<div id="modal" hidden>
+  <div class="box">
+    <b id="modalTitle">日志文本</b>
+    <textarea id="modalText" readonly></textarea>
+    <div class="mops">
+      <button class="pri" id="mCopy">复制</button>
+      <button id="mTxt">导出TXT</button>
+      <button id="mPrint">打印(A4)</button>
+      <button id="mClose">关闭</button>
+    </div>
+  </div>
+</div>
+<div id="printArea"></div>
+<div id="toast"></div>
+<input type="file" id="fileImp" accept=".json,application/json" hidden>
+
+<script>
+"use strict";
+/* ================= 种子字典（源自 基础信息库.md） ================= */
+const SEED = {
+building:[
+["BF-Z","病房区左结构单元",15,2],["BF-Y","病房区右结构单元",15,2],["KY","科研区结构单元",8,2],
+["MJ","门急诊区结构单元",4,1],["GR","感染楼",3,1],["FF","辅房楼",2,1],["DK","地下车库",0,2],
+["MW1","门卫1",1,0],["MW2","门卫2",1,0],["WS","污水处理站",0,0],["YO","液氧站",0,0],
+["SW","室外工程",0,0],["RF","人防工程",0,2]],
+floor:[["B2","地下二层"],["B1","地下一层"],["1F","首层"],["2F","二层"],["3F","三层"],["4F","四层"],["5F","五层"],["6F","六层"],["7F","七层"],["8F","八层"],["9F","九层"],["10F","十层"],["11F","十一层"],["12F","十二层"],["13F","十三层"],["14F","十四层"],["15F","十五层"],["JM","屋面层"],["NQ","女儿墙/出屋面构件"],["DT","电梯机房/出屋面楼梯间"],["JC","基础"],["KQ","基坑/肥槽"],["SD","施工段"]],
+proc:[
+["土方分层开挖","土方","m³","完成{部位}土方开挖{数量}{单位}，分层厚度1.0~1.5m（≤2.0m），分段长度≤30m"],
+["土方外运","土方","车","{部位}土方外运{数量}车，运距按消纳协议，车辆冲洗后出场"],
+["基坑坡道修整","土方","m","{部位}坡道（宽10m、i=1:7）修整维护"],
+["基底钎探","土方","点","完成{部位}钎探{数量}点，深2.1m、每30cm一步锤击数记录"],
+["基底清槽验槽","土方","㎡","{部位}清槽完成，组织勘察/设计/监理/建设验槽"],
+["土钉成孔","支护","根","完成{部位}土钉成孔{数量}根，孔径/倾角按支护剖面图"],
+["土钉安装注浆","支护","根","{部位}土钉安装注浆{数量}根，浆体水灰比按方案"],
+["挂网喷射混凝土","支护","㎡","完成{部位}喷锚面层{数量}{单位}，厚80mm、φ6@150×150钢筋网、P.O42.5"],
+["护坡桩成孔浇筑","支护","根","完成{部位}φ800护坡桩{数量}根，C30，桩长16m/12m，嵌固5.2/5.3m"],
+["冠梁施工","支护","m","完成{部位}冠梁（1000×800）钢筋绑扎/浇筑{数量}{单位}，浇筑不留过夜"],
+["预应力锚索钻孔","支护","根","完成{部位}锚索钻孔{数量}根，L=18m、自由端5m"],
+["锚索注浆张拉锁定","支护","根","{部位}锚索张拉锁定{数量}根，预加力30kN，浆体≥20MPa、张拉时≥15MPa"],
+["基坑排水沟/集水井","支护","m","{部位}排水沟砌筑{数量}m、集水井配套，配泵抽排"],
+["基坑监测","支护","点·次","{部位}基坑监测{数量}点（位移/沉降/锚索轴力），数据无异常"],
+["坡顶荷载检查","支护","项","检查{部位}坡顶堆载，未超设计限值"],
+["素混凝土桩成桩","地基处理","根","完成{部位}φ400素混凝土桩{数量}根，C25、桩距1800×1800、跳打，坍落度160~200mm、缓凝≥6h"],
+["桩顶超灌控制","地基处理","根","{部位}桩超灌0.5m，充盈系数≥1.0（验收>1.05），桩顶标高+30/−50mm"],
+["凿桩头","地基处理","根","完成{部位}凿桩头{数量}根，桩顶平整、无松散层"],
+["褥垫层铺设夯实","地基处理","㎡","完成{部位}褥垫层{数量}{单位}，200厚中粗砂或石屑、含泥≤5%、每边外扩200、夯填度≤0.9"],
+["低应变检测","地基处理","根","{部位}桩基低应变检测{数量}根（成桩28d后，≥30%且≥10根），结果Ⅰ/Ⅱ类桩"],
+["静载试验","地基处理","根","{部位}单桩/复合地基静载试验{数量}根（各≥1%且≥3根），承载力满足设计"],
+["桩间土清理","地基处理","㎡","{部位}桩间土清理至设计标高，严禁超挖扰动"],
+["级配砂石换填","地基处理","m³","完成{部位}级配砂石换填{数量}{单位}，分层夯实、压实系数符合设计"],
+["垫层浇筑","基础","m³","完成{部位}C20垫层浇筑{数量}{单位}，厚150mm"],
+["砖胎膜砌筑","基础","m","完成{部位}砖胎膜砌筑{数量}{单位}，200厚、沿底板边线外延20mm，浇前完成侧边回填"],
+["集水坑/电梯坑箱模","基础","座","{部位}坑体12厚木胶板箱模安装{数量}座，φ48×2.7钢管可调支座加固"],
+["防水基层处理","防水","㎡","{部位}基层清理修补，阴角R50/阳角R20圆弧完成，处理剂涂刷干燥10h"],
+["预铺反粘卷材铺贴","防水","㎡","完成{部位}1.5厚橡胶自粘胶膜预铺反粘卷材{数量}{单位}，搭接≥80mm"],
+["膜基自粘沥青卷材铺贴","防水","㎡","完成{部位}1.5厚纤维增强高分子膜基自粘沥青卷材{数量}{单位}，搭接≥80mm，防水等级一级"],
+["防水附加层","防水","㎡","{部位}阴阳角/桩头/后浇带附加层施工，每边≥250mm、上翻≥50mm"],
+["桩头防水处理","防水","个","{部位}桩头渗透结晶涂料施工{数量}个（基面湿润且≥5℃）"],
+["防水保护层浇筑","防水","㎡","完成{部位}防水保护层{数量}{单位}，严禁泵管/钢筋直接冲击防水层"],
+["外墙防水施工","防水","㎡","完成{部位}地下室外墙防水{数量}{单位}，基层干燥、搭接宽度符合方案"],
+["防水蓄水/淋水试验","防水","处","{部位}蓄水试验{数量}处，24h无渗漏（屋面淋水2h）"],
+["肥槽回填","回填","m³","完成{部位}肥槽回填{数量}{单位}，外壁1m内2:8灰土压实≥0.95，其余压实≥0.94"],
+["底板钢筋绑扎","钢筋","t","完成{部位}底板钢筋绑扎{数量}{单位}，上下层钢筋马凳/支架稳固"],
+["钢筋原材进场验收","钢筋","t","{规格}钢筋进场{数量}{单位}，报监理验收并见证取样，标识牌注明炉批号/验收状态"],
+["钢筋复试取样","钢筋","组","{规格}钢筋见证取样{数量}组（同牌号同炉批≤60t一批），送检"],
+["钢筋调直除锈","钢筋","t","{部位}钢筋调直除锈加工{数量}{单位}"],
+["钢筋切断","钢筋","t","钢筋加工区切断下料{数量}{单位}，按配料单"],
+["钢筋弯曲成型","钢筋","t","{部位}钢筋弯曲成型{数量}{单位}，弯钩/弯折角度符合规范"],
+["钢筋套丝","钢筋","头","{部位}钢筋直螺纹套丝{数量}头，丝头检验合格戴保护帽"],
+["直螺纹连接","钢筋","头","{部位}钢筋直螺纹连接{数量}头，外露丝扣≤2扣，力矩扳手抽检"],
+["电渣压力焊","钢筋","头","{部位}柱筋电渣压力焊{数量}头，焊包均匀、轴线偏移符合规范"],
+["电弧焊","钢筋","头","{部位}钢筋电弧焊{数量}头（冬期层间温度150~350℃）"],
+["柱钢筋绑扎","钢筋","t","完成{部位}柱钢筋绑扎{数量}{单位}，箍筋加密区/间距正确"],
+["剪力墙钢筋绑扎","钢筋","t","完成{部位}墙钢筋绑扎{数量}{单位}，水平/竖向筋间距、拉结筋梅花布置"],
+["梁钢筋绑扎","钢筋","t","完成{部位}梁钢筋绑扎{数量}{单位}，锚固长度/箍筋加密符合图纸"],
+["板钢筋绑扎","钢筋","t","完成{部位}板钢筋绑扎{数量}{单位}，保护层垫块/马凳设置到位"],
+["楼梯钢筋绑扎","钢筋","t","完成{部位}楼梯钢筋绑扎{数量}{单位}"],
+["钢筋隐蔽验收","钢筋","段","{部位}钢筋隐蔽验收合格（型号/间距/搭接/保护层），填写联检单报监理"],
+["钢筋成品保护","钢筋","项","{部位}钢筋防踩踏/防污染措施到位，水电预埋未破坏主筋"],
+["模板配制","模板","㎡","木工棚模板配制{数量}{单位}，编号堆放"],
+["墙柱模板安装","模板","㎡","完成{部位}墙柱模板安装{数量}{单位}，对拉螺栓/斜撑加固，垂直度校正"],
+["梁板模板安装","模板","㎡","完成{部位}梁板模板安装{数量}{单位}，起拱/拼缝/标高符合方案"],
+["高支模架体搭设","模板","㎡","{部位}超高超限支模架搭设{数量}{单位}，按论证方案执行，扫地杆/剪刀撑/顶托外露长度受控"],
+["高支模验收","模板","段","{部位}高支模验收合格（扣件扭力矩抽检），报监理后进入下道工序"],
+["模板预检","模板","段","{部位}模板预检：轴线/截面尺寸/标高/预埋件位置合格"],
+["模板拆除","模板","㎡","{部位}模板拆除{数量}{单位}，同条件试块强度达要求，拆模温差≤20℃"],
+["模板清理涂刷隔离剂","模板","㎡","模板清理{数量}{单位}，均匀涂刷隔离剂"],
+["后浇带独立支撑","模板","m","{部位}后浇带独立支撑保留/搭设{数量}m，严禁提前拆除"],
+["混凝土浇筑申请","混凝土","段","{部位}浇筑令签发，钢筋/模板/预埋隐蔽验收完成，监理批准开盘"],
+["商品混凝土进场","混凝土","车","{强度等级}混凝土进场{数量}车，核对配合比/开盘鉴定/运输单，坍落度实测记录"],
+["墙柱混凝土浇筑","混凝土","m³","完成{部位}墙柱{强度等级}混凝土浇筑{数量}{单位}，分层≤500mm、振捣密实"],
+["梁板混凝土浇筑","混凝土","m³","完成{部位}梁板{强度等级}混凝土浇筑{数量}{单位}，汽车泵输送、赶浆法推进"],
+["底板混凝土浇筑","混凝土","m³","完成{部位}底板混凝土浇筑{数量}{单位}，汽车泵输送，斜面分层、连续浇筑，里表温差≤25℃"],
+["楼梯混凝土浇筑","混凝土","m³","完成{部位}楼梯混凝土浇筑{数量}{单位}，自下而上"],
+["后浇带混凝土浇筑","后浇带","m³","{部位}后浇带封闭浇筑{数量}{单位}，地下C40P8早强补偿收缩/地上C45微膨胀，龄期60d、合拢温度5~15℃"],
+["施工缝处理","混凝土","处","{部位}施工缝剔凿清理，已浇混凝土≥1.2MPa，接缝面温度>2℃（冬期）"],
+["混凝土收面","混凝土","㎡","{部位}混凝土二次收面{数量}{单位}，防塑性收缩裂缝"],
+["混凝土覆盖养护","混凝土","㎡","{部位}覆盖薄膜＋保温被养护{数量}{单位}，养护≥7d（抗渗≥14d），冬期按热工计算保温"],
+["大体积测温","混凝土","点·次","{部位}大体积测温{数量}点，里表≤25℃、降温≤2.0℃/d，覆盖保温≥28d"],
+["混凝土测温","混凝土","点·次","{部位}测温{数量}点·次：大气每昼夜≥4次、出罐入模每班≥4次、达临界强度前每2h"],
+["试块制作","混凝土","组","{部位}留置标养试块{数量}组（每100m³一组）、同条件试块（冬期每段≥4组）、抗渗每500m³两组"],
+["试块送检","混凝土","组","{部位}试块送检{数量}组，28d强度报告合格/待出"],
+["混凝土缺陷修补","混凝土","处","{部位}蜂窝麻面修补{数量}处，按技术方案处理并报监理"],
+["冬期出罐入模温度检查","冬施","车·次","抽查混凝土出罐≥15℃、入模≥10℃，运输温降≤5℃/h，−15℃及以下停止浇筑"],
+["砌块进场验收","砌体","万块","砌块进场{数量}{单位}，龄期≥28d，合格证/复试齐全"],
+["砌筑放线/立皮数杆","砌体","段","{部位}砌筑放线、立皮数杆，坎台250高C20浇筑"],
+["墙体砌筑","砌体","m³","完成{部位}墙体砌筑{数量}{单位}，日砌高度≤1.8m，砂浆饱满度≥80%"],
+["构造柱/圈梁施工","砌体","m³","{部位}构造柱/圈梁钢筋绑扎浇筑{数量}{单位}，马牙槎先退后进"],
+["拉结筋设置","砌体","处","{部位}拉结筋植筋/预埋{数量}处，拉拔试验合格"],
+["墙顶斜砌","砌体","m","{部位}墙顶预留200mm，砌完7d后60°斜砌顶紧"],
+["砂浆试块留置","砌体","组","砌筑砂浆试块{数量}组，砂浆使用时限3h/4h（>30℃时2h/3h）"],
+["基层处理/甩浆","抹灰","㎡","{部位}抹灰基层清理、甩浆拉毛{数量}{单位}"],
+["挂网","抹灰","㎡","{部位}不同基体交接处挂网{数量}{单位}，搭接≥100mm"],
+["灰饼冲筋","抹灰","㎡","{部位}灰饼冲筋完成，垂直平整度控制"],
+["底灰/面灰抹灰","抹灰","㎡","完成{部位}抹灰{数量}{单位}，分层压实、无空鼓开裂"],
+["抹灰养护","抹灰","㎡","{部位}抹灰面层养护，防止早期失水"],
+["地面基层清理","地面","㎡","{部位}地面基层清理{数量}{单位}，标高复核"],
+["找平层施工","地面","㎡","完成{部位}找平层{数量}{单位}，坡度/平整度符合设计"],
+["面层施工","地面","㎡","完成{部位}面层{数量}{单位}（按装修做法表）"],
+["吊顶龙骨安装","吊顶","㎡","{部位}吊顶龙骨安装{数量}{单位}，吊杆间距/起拱符合方案"],
+["吊顶封板","吊顶","㎡","完成{部位}吊顶封板{数量}{单位}，板缝防裂处理"],
+["门窗洞口复核","门窗","樘","{部位}门窗洞口尺寸复核{数量}樘"],
+["铝合金窗框安装","门窗","樘","完成{部位}铝合金窗框安装{数量}樘，固定片/发泡/防水密封到位"],
+["门窗玻璃/扇安装","门窗","樘","{部位}门窗玻璃及扇安装{数量}樘，启闭灵活"],
+["铅防护门安装","门窗","樘","{部位}铅防护门安装{数量}樘，防护当量按设计"],
+["铜屏蔽门/窗安装","门窗","樘","{部位}MRI铜屏蔽门安装{数量}樘，屏蔽壳体与大地绝缘"],
+["气密门安装","门窗","樘","{部位}气密门安装{数量}樘，气密性检测合格"],
+["幕墙预埋件/后置埋件","幕墙","件","{部位}幕墙埋件安装/拉拔{数量}件"],
+["幕墙龙骨安装","幕墙","㎡","完成{部位}幕墙龙骨安装{数量}{单位}，焊接防火防腐处理"],
+["幕墙面板安装","幕墙","㎡","完成{部位}幕墙面板安装{数量}{单位}，胶缝饱满"],
+["幕墙淋水试验","幕墙","处","{部位}幕墙淋水试验{数量}处，无渗漏"],
+["屋面找坡/找平层","屋面","㎡","完成{部位}屋面找坡找平{数量}{单位}，坡度符合设计"],
+["屋面防水层施工","屋面","㎡","完成{部位}屋面防水{数量}{单位}，搭接/收头符合方案"],
+["屋面保温层铺设","屋面","㎡","{部位}屋面保温铺设{数量}{单位}"],
+["屋面保护层/面层","屋面","㎡","完成{部位}屋面保护层{数量}{单位}，分格缝设置"],
+["外墙保温板粘贴","保温","㎡","完成{部位}XPS板粘贴{数量}{单位}，满粘率≥80%、板缝≤2mm、错缝1/2板长"],
+["保温锚栓安装","保温","㎡","{部位}锚栓安装{数量}{单位}，≥6个/㎡（防火隔离带≥8个/㎡）、锚固深≥50mm"],
+["防火隔离带施工","保温","m","{部位}防火隔离带{数量}m，宽≥300mm、与XPS搭接≥100mm"],
+["抹面胶浆/网格布","保温","㎡","完成{部位}抹面层{数量}{单位}，网格布搭接/阴阳角加强"],
+["架体基础处理","脚手架","㎡","{部位}架体基础硬化/垫板铺设，地基承载力复核"],
+["落地架搭设","脚手架","㎡","{部位}扣件式双排落地架搭设{数量}{单位}，Φ48.0×3.5 Q235，la=1.5/lb=0.9/h=1.5m"],
+["连墙件设置","脚手架","处","{部位}连墙件{数量}处，二步三跨、刚性可受拉压、近主节点≤300mm"],
+["剪刀撑搭设","脚手架","道","{部位}剪刀撑{数量}道，宽≥4跨且≥6m、倾角45~60°、由底至顶连续"],
+["扣件拧紧检查","脚手架","点","{部位}扣件扭力矩抽检{数量}点，40~65N·m合格"],
+["架体验收挂牌","脚手架","段","{部位}架体验收合格挂牌使用，扫地杆/小横杆/防护齐全"],
+["安全网挂设","脚手架","㎡","{部位}密目网全封闭挂设{数量}{单位}，作业层脚手板满铺"],
+["架体提升（爬架）","脚手架","机位","{部位}附着式爬架提升{数量}机位，提升前验收、防坠防倾装置有效"],
+["架体拆除","脚手架","㎡","{部位}架体拆除{数量}{单位}，由上而下、连墙件随层拆，拆下件码放≤1.5m"],
+["套管预埋","预留预埋","个","{部位}给排水/暖通套管预埋{数量}个，标高坐标复核"],
+["线管预埋","预留预埋","m","{部位}电气线管预埋{数量}m，管内导线总截面≤40%"],
+["线盒/箱壳预埋","预留预埋","个","{部位}线盒箱壳预埋{数量}个，固定牢靠、封堵严密"],
+["防雷接地焊接","预留预埋","处","{部位}防雷引下线/均压环焊接{数量}处，搭接长度双面焊≥6d"],
+["预留洞口放线","预留预埋","个","{部位}机电预留洞口放线复核{数量}个，严禁事后剔凿主筋"],
+["人防预埋件安装","人防","件","{部位}人防门框预埋件/吊环安装{数量}件，双面焊≥40d、偏差≤3mm"],
+["人防密闭套管预埋","人防","根","{部位}预埋镀锌钢管Φ48×3.5＋3道密闭肋（厚≥5高≥50）{数量}根"],
+["预留预埋隐蔽验收","预留预埋","段","{部位}预留预埋与钢筋联检合格，报监理隐蔽"],
+["支吊架制作安装","机电","套","{部位}管道/桥架支吊架安装{数量}套，抗震支架按深化图"],
+["给水管道安装","给排水","m","完成{部位}给水管道安装{数量}m，试压合格"],
+["排水管道安装","给排水","m","完成{部位}排水管道安装{数量}m，坡度/通球试验合格"],
+["雨水管道安装","给排水","m","{部位}雨水管安装{数量}m，灌水试验合格"],
+["卫生器具安装","给排水","套","{部位}卫生器具安装{数量}套，满水/通水试验"],
+["消防栓/喷淋管道安装","消防","m","{部位}消防管道安装{数量}m，试压/冲洗合格"],
+["风管制作安装","暖通","㎡","完成{部位}风管安装{数量}{单位}，漏光/漏风检测合格"],
+["空调水管安装","暖通","m","{部位}空调水管道安装{数量}m，试压/保温"],
+["净化空调机组安装","净化","台","{部位}净化机组安装{数量}台，高效过滤器检漏、洁净度检测"],
+["净化区装饰密封","净化","㎡","{部位}净化区壁板/顶板安装密封{数量}{单位}，圆弧角处理"],
+["桥架安装","电气","m","完成{部位}电缆桥架安装{数量}m，接地跨接"],
+["电缆敷设","电气","m","{部位}电缆敷设{数量}m，端部预留1~2m、中间1.5m"],
+["导线穿管","电气","m","{部位}导线穿管{数量}m，盒内预留15cm、配电箱内=箱体周长1/2"],
+["配电箱柜安装","电气","台","{部位}配电箱柜安装{数量}台，接地/标识齐全"],
+["灯具/开关插座安装","电气","套","{部位}灯具开关插座安装{数量}套，绝缘测试合格"],
+["弱电桥架/布线","弱电","m","{部位}弱电线缆敷设{数量}m，交接间预留3~6m、工作区0.3~0.6m"],
+["弱电机柜/设备安装","弱电","台","{部位}机柜设备安装{数量}台，光缆设备端预留5~10m"],
+["医用气体管道安装","医气","m","{部位}医用气体管道安装{数量}m，脱脂/气密试验/标识"],
+["医气终端/气源安装","医气","套","{部位}气体终端/气源设备安装{数量}套，报警测试"],
+["电梯导轨/厅门安装","电梯","台","{部位}电梯安装{数量}台进度节点，特检院监督检验"],
+["系统调试","机电","系统","{部位}系统单机试运转/联合调试完成，记录齐全"],
+["接地电阻测试","电气","点","{部位}接地电阻测试{数量}点，实测值≤设计值"],
+["屏蔽效能检测","特殊科室","间","{部位}MRI/DSA屏蔽效能检测合格（有资质单位），方可设备安装"],
+["室外管沟开挖","室外","m","{部位}管沟开挖{数量}m，边坡/堆土受控"],
+["室外管网安装","室外","m","{部位}管道敷设{数量}m，闭水/试压合格"],
+["检查井砌筑","室外","座","{部位}检查井{数量}座，井盖标高与道路顺接"],
+["道路基层/面层","室外","㎡","完成{部位}道路基层/面层{数量}{单位}，压实度/平整度合格"],
+["绿化种植","室外","㎡","{部位}绿化{数量}{单位}，种植土/养护"],
+["充电桩安装","室外","台","{部位}充电桩安装{数量}台"],
+["泛光照明安装","室外","套","{部位}泛光灯具安装{数量}套，调试"],
+["光伏组件安装","室外","块","{部位}光伏组件安装{数量}块，并网调试"],
+["污水处理站设备安装","污水站","台","{部位}污水处理设备安装{数量}台，单机/联动调试"],
+["液氧站施工","液氧站","项","{部位}液氧站基础/设备施工，安全距离/禁火管控"],
+["物流传输系统安装","物流","套","{部位}物流传输站点/轨道安装{数量}套"],
+["钢结构吊装","钢结构","t","{部位}钢结构吊装{数量}t，临时支撑/高强螺栓终拧/焊缝检测"],
+["粘滞阻尼器安装","减震","套","{部位}阻尼器安装{数量}套（VFD-03×18，350kN墙式；VFD-04×8），见证抽检"],
+["测量放线","管理","项","{部位}测量放线/标高复核完成"],
+["安全技术交底","管理","次","{工序}安全技术交底{数量}人签字"],
+["安全文明施工检查","管理","项","全场安全文明施工检查（防护/消防/扬尘治理），情况正常"],
+["扬尘治理","管理","项","裸土覆盖、雾炮喷淋开启、车辆冲洗，落实扬尘治理措施"],
+["冬施保温测温","冬施","项","冬期施工保温覆盖与测温检查，按冬施方案执行"]],
+trade:[
+["木工","结构/装修",0],["钢筋工","结构",0],["混凝土工","结构",0],["架子工","结构",1],["焊工（电气焊）","结构/安装",1],
+["电工（临电/安装）","机电",1],["水暖工/管工","机电",0],["通风工","机电",0],["弱电工","机电",0],
+["塔吊司机","起重",1],["塔吊指挥/司索信号工","起重",1],["施工升降机司机","起重",1],["汽车吊司机","起重",1],
+["起重机械安拆工","起重",1],["高处作业吊篮安装拆卸工","幕墙",1],["挖掘机/装载机司机","土方",0],["桩机操作工","地基",0],
+["普工","辅助",0],["抹灰工","装修",0],["镶贴工","装修",0],["涂裱工","装修",0],["幕墙安装工","装修",1],
+["防水工","防水",0],["保温工","节能",0],["测量工","管理",0],["试验工","管理",0],["机械维修工","机修",0],
+["保安/门卫","后勤",0],["厨师/后勤","后勤",0],["管理人员","管理",1]],
+machine:[
+["塔式起重机","QTZ80（7025）","台"],["施工升降机","SC200/200","台"],["汽车泵（混凝土泵车）","48/56/62m臂架","台"],
+["拖式混凝土泵","HBT80","台"],["布料机","15/18m","台"],["长螺旋钻机","CFG桩用","台"],["挖掘机","PC200/PC60","台"],
+["装载机","ZL50","台"],["自卸汽车","20t级","辆"],["汽车吊","25t/50t","台"],["钢筋切断机","GQ40/GQ50","台"],
+["钢筋弯曲机","GW40/GW50","台"],["钢筋调直切断机","GT4-14","台"],["钢筋套丝机","HGS-40","台"],["电渣压力焊机","BX3-500级","台"],
+["交流/直流电焊机","BX1-400/ZX7-400","台"],["木工圆盘锯","MJ104","台"],["砂浆搅拌机/罐","干混砂浆罐","台"],
+["空压机","0.9~1.2m³","台"],["喷射混凝土机","PZ-5","台"],["锚索钻机","MD-50级","台"],["注浆泵","BW系列","台"],
+["插入式振捣器","ZX50/ZN35","台"],["平板振捣器/抹光机","","台"],["蛙式打夯机/平板夯","","台"],["压路机","小型振动","台"],
+["潜水泵/污水泵","50~100m³/h","台"],["柴油发电机","按临电组织设计","台"],["全站仪/经纬仪","","台"],["水准仪/激光垂准仪","","台"],
+["热吹风机","30kW","台"],["电暖风机","1.5~3kW","台"],["雾炮机","30~60m","台"],["车辆冲洗机","","台"],
+["喷淋系统","围挡/塔吊喷淋","套"],["电动吊篮","ZLP630","台"],["附着式爬架","租赁","套"],["人防门吊装设备","手拉葫芦/专用吊具","套"]],
+material:[
+["商品混凝土","C20（垫层）","m³"],["商品混凝土","C25（素混凝土桩）","m³"],["商品混凝土","C30（护坡桩/冠梁）","m³"],
+["商品混凝土","C35P8（人防墙）","m³"],["商品混凝土","C40P8早强补偿收缩（地下后浇带）","m³"],
+["商品混凝土","C45微膨胀（地上后浇带）","m³"],["商品混凝土","底板/主体（按图纸，B2 P10/B1 P8）","m³"],
+["钢筋","HRB400E Φ6~Φ25","t"],["钢筋","HPB300（箍筋/构造）","t"],["直螺纹套筒","Ⅰ级接头配套","个"],
+["水泥","P.O42.5","t"],["中粗砂","细度模数2.3~3.0","m³"],["石屑","0.5~1.0cm","m³"],["级配砂石","按换填设计","m³"],
+["白灰/石灰膏","2:8灰土用","t"],["砌块","蒸压类 龄期≥28d","万块"],["多孔砖","按图纸","万块"],
+["干混砌筑砂浆","M5/M10","t"],["干混抹灰砂浆","M15/M20","t"],["模板","15mm木胶板","㎡"],["木方","40×80/50×100","m³"],
+["钢管（脚手架）","Φ48.0×3.5 Q235","m"],["扣件","直角/旋转/对接","个"],["可调顶托/底座","丝杆外露≤200mm","个"],
+["安全网","密目式/平网","㎡"],["止水钢板","3×300","m"],["膨润土止水条","30×20","m"],["快易收口网","后浇带用","㎡"],
+["防水卷材（底板）","1.5厚橡胶自粘胶膜预铺反粘","㎡"],["防水卷材（底板）","1.5厚纤维增强高分子膜基自粘沥青","㎡"],
+["防水涂料/卷材","屋面/外墙按方案","㎡"],["渗透结晶涂料","桩头用","kg"],["膨胀剂","限制膨胀率≥0.025%","t"],
+["防冻剂","无氯型","t"],["保温材料","XPS板","㎡"],["岩棉带","防火隔离带 宽≥300","m"],["保温被/岩棉毯","冬施覆盖","㎡"],
+["彩条布/薄膜","养护覆盖","㎡"],["电缆","YJV/VV","m"],["电线","BV/BVR","m"],["电线管","JDG/SC","m"],
+["电缆桥架","含防火","m"],["配电箱柜","按系统图","台"],["给水管材","按给排水图","m"],["排水管材","UPVC/铸铁","m"],
+["镀锌钢管/风管板材","按暖通图","m"],["净化板材/高效过滤器","特殊科室","㎡"],["医用气体管材","脱脂铜管/不锈钢管","m"],
+["抗震支架","按深化图","套"],["铅防护门","QFM/QFYM/QFC系列","樘"],["铜屏蔽门/窗","TFM/TFC系列","樘"],
+["气密门","AM1524/AM1824","樘"],["铝合金窗","按门窗表","樘"],["铝板","幕墙","㎡"],["石材","幕墙","㎡"],
+["粘滞阻尼器","VFD-03/VFD-04","套"],["人防防护密闭门","K/W系列","樘"],["人防密闭门/活门/观察窗","","樘"],
+["人防预埋钢管","Φ48×3.5＋3道密闭肋","根"],["过滤吸收器","RFP-1000","台"],["电梯设备","按分包","台"],
+["充电桩","","台"],["光伏组件","按光伏专项","块"]],
+person:[
+["李辉","项目经理","石家庄市建筑工程有限公司"],["周建","执行经理","石家庄市建筑工程有限公司"],
+["耿昭","生产经理","石家庄市建筑工程有限公司"],["张朋朋","技术负责人","石家庄市建筑工程有限公司"],
+["霍凯迪","商务经理","石家庄市建筑工程有限公司"],["张晓","预算员","石家庄市建筑工程有限公司"],
+["安迪迪","材料员","石家庄市建筑工程有限公司"],["苏建彬","库管员","石家庄市建筑工程有限公司"],
+["高荣帅","安全总监","石家庄市建筑工程有限公司"],["赵方正","质量员","石家庄市建筑工程有限公司"],
+["吴向锋","质量员","石家庄市建筑工程有限公司"],["郑思远","质量员","石家庄市建筑工程有限公司"],
+["张李阳","质量员","石家庄市建筑工程有限公司"],["张晓龙","质量员","石家庄市建筑工程有限公司"],
+["顼明亮","质量员","石家庄市建筑工程有限公司"],["白程伟","质量员","石家庄市建筑工程有限公司"],
+["曹红亮","监理工程师","石家庄宏业交通建设监理有限公司"],["樊金梁","监理工程师","石家庄宏业交通建设监理有限公司"],
+["孟宪林","监理工程师","石家庄宏业交通建设监理有限公司"],["杨乾隆","监理工程师","石家庄宏业交通建设监理有限公司"],
+["何江永","监理工程师","石家庄宏业交通建设监理有限公司"]],
+weather:[["晴"],["多云"],["阴"],["阵雨"],["小雨"],["中雨"],["大雨"],["暴雨"],["大暴雨"],["雷阵雨"],["雨夹雪"],["小雪"],["中雪"],["大雪"],["暴雪"],["雾"],["霾"],["沙尘"],["大风"],["高温"],["寒潮"]],
+unit:[["t"],["kg"],["m³"],["㎡"],["m"],["km"],["根"],["头"],["个"],["件"],["套"],["台"],["辆"],["樘"],["组"],["批"],["点"],["处"],["座"],["口"],["道"],["步"],["跨"],["机位"],["车"],["人"],["工日"],["台班"],["次"],["项"],["层"],["段"],["系统"],["点·次"],["万块"],["车·次"]],
+reason:[["材料未到"],["机械故障"],["天气"],["停电"],["图纸未定"],["人员不足"],["其他"]],
+acceptType:[["隐蔽工程"],["旁站"],["平行检验"],["分项验收"]],
+acceptResult:[["合格"],["整改后合格"],["不合格"]],
+matStatus:[["进场"],["退场"],["使用"],["整理"]],
+machStatus:[["正常运转"],["维修保养"],["故障停机"],["闲置"],["进场安装"],["拆除退场"],["检测检验中"]],
+problem:[
+["局部钢筋间距偏大","调整间距至设计值，复验合格","质量"],
+["钢筋保护层厚度不足/垫块缺失","补设垫块、调整马凳，隐蔽前复验","质量"],
+["钢筋搭接/锚固长度不足","按图纸补强连接，报监理复验","质量"],
+["直螺纹接头外露丝扣超2扣","重新拧紧或截除重套，力矩抽检","质量"],
+["电渣压力焊焊包不匀/夹渣","切除重焊，加倍抽检","质量"],
+["模板拼缝漏浆","封堵拼缝，已漏浆部位剔凿修补","质量"],
+["模板垂直度/截面尺寸超偏","校正加固，预检复查","质量"],
+["混凝土蜂窝麻面","剔凿松散层，高一等级细石混凝土/砂浆修补，报监理","质量"],
+["混凝土露筋","除锈清理，聚合物砂浆修补，严重时设计核定","质量"],
+["混凝土裂缝（塑性/干缩）","表面封闭/压力注浆，分析原因，加强养护；影响结构时报设计评定","质量"],
+["施工缝冷缝/夹渣","剔凿至密实面，冲洗湿润，按施工缝方案处理","质量"],
+["混凝土强度回弹偏低","钻芯复核，报设计评定，严禁擅自处理","质量"],
+["底板/外墙渗漏","查清渗漏点，注浆堵漏；影响结构安全或防水功能时经设计评定出方案后实施","质量"],
+["止水钢板/止水条偏位","复位固定，浇筑前隐蔽复查","质量"],
+["后浇带提前加载/支撑早拆","立即卸载、恢复独立支撑，评估结构影响","质量"],
+["大体积里表温差超25℃","加厚保温、延缓撤模，加密测温","质量"],
+["素混凝土桩断桩/缩颈/偏位","报勘察、设计评定，按补桩/接桩方案处理，严禁擅自处理","质量"],
+["桩头松散/标高不足","凿除至密实，接桩按设计处理","质量"],
+["回填压实度不足","翻挖重夯，分层检测（≥0.94/灰土≥0.95）","质量"],
+["砌体灰缝不饱满/通缝","拆砌重做，砂浆饱满度≥80%复查","质量"],
+["砌块龄期不足上墙","退场/停用，待龄期≥28d","质量"],
+["墙顶斜砌过早/不密实","拆除重砌，砌完7d后60°斜砌","质量"],
+["漏设构造柱/圈梁/拉结筋","报设计，按补强方案处理，严禁擅自处理","质量"],
+["抹灰空鼓开裂","切割凿除空鼓区，挂网分层重抹","质量"],
+["地面起砂/空鼓","凿除重做或渗透固化处理（按设计）","质量"],
+["门窗洞口尺寸偏差","修整洞口，复核后再安装","质量"],
+["外窗渗漏","拆查密封/排水孔，重新打胶淋水复验","质量"],
+["防水搭接宽度不足","补贴附加层，搭接≥80mm复查","质量"],
+["保温板粘贴面积不足/锚栓少","补粘补锚，拉拔抽检","质量"],
+["预留预埋漏设/偏位","报技术负责人，严禁事后剔凿主筋，按核定方案处理","质量"],
+["管道试压/通球不合格","查漏返工，重新试验","质量"],
+["风管漏风超标","密封返工，漏风检测复查","质量"],
+["接地电阻超设计值","补打接地极/降阻处理，复测","质量"],
+["人防门框预埋偏差>3mm","报人防设计核定处理，严禁擅自扩凿","质量"],
+["人防门贴合间隙>5mm","调整门框/更换胶条，启闭力复测","质量"],
+["幕墙胶缝开裂/渗漏","割胶重打，淋水复验","质量"],
+["临边防护缺失/损坏","立即恢复定型化防护，验收后复用","安全"],
+["洞口盖板缺失/未固定","恢复固定盖板＋警示标识","安全"],
+["人员未系安全带高处作业","立即停止作业，教育处罚，设置生命线","安全"],
+["未戴安全帽/穿拖鞋进场","制止并教育，按制度处罚","安全"],
+["脚手架连墙件缺失/被拆","立即恢复，架体停用复查","安全"],
+["扣件扭力矩不足40N·m","复拧至40~65N·m，扩大抽检","安全"],
+["架体超载堆料","立即卸载，限载标识","安全"],
+["安全网破损/封闭不严","更换补挂","安全"],
+["配电箱一闸多机/漏保失效","停用整改，一机一闸一漏一箱，漏保试跳","安全"],
+["电缆破损/拖地泡水","更换或架空敷设，绝缘检测","安全"],
+["私拉乱接/非电工接电","拆除，由持证建筑电工整改","安全"],
+["塔吊限位/力矩限制器失效","立即停机，维保校验合格后复用","安全"],
+["吊物捆绑不牢/信号不明","停止吊装，重新司索，持证信号工指挥","安全"],
+["施工升降机门联锁失效","停机维修，严禁带病运行","安全"],
+["动火无审批/无看火人","停止动火，补办动火证，配灭火器看火人","安全"],
+["氧气乙炔瓶间距不足/暴晒","间距≥5m、距明火≥10m，防晒防倾倒","安全"],
+["有限空间未通风检测先行","停止作业，先通风、再检测、后作业，审批监护","安全"],
+["消防水池/电梯井内作业无监护","撤出人员，补审批与监护","安全"],
+["灭火器过期/压力不足","更换充装，消防点复查","安全"],
+["消防通道堵塞","立即清理，划线管控","安全"],
+["材料堆放超高/不稳","降高码放（拆下架料≤1.5m），垫离地≥200mm","安全"],
+["基坑坡顶超载堆土","立即清运，监测加密","安全"],
+["边坡渗水/裂缝","停止坑内作业，上报启动应急预案，泄水反压","安全"],
+["模板支撑与外架相连","断开连接，独立受力整改","安全"],
+["高支模未验收即浇筑","停止浇筑，补验收程序","安全"],
+["电梯井口/楼梯临边无防护","定型化防护恢复","安全"],
+["夜间照明不足","增设镝灯/LED，照度检查","安全"],
+["车辆带泥出场","冲洗台整改，门禁管控","安全"],
+["裸土未覆盖/扬尘超标","覆盖/喷淋，响应预警停工","安全"],
+["工人宿舍大功率电器","没收整改，限电管理","安全"],
+["食堂卫生/食品留样不合规","整改，留样48h","安全"],
+["医用气体/液氧区违规动火","立即停止，专项审批（液氧站禁火管控）","安全"]],
+emergency:[["坍塌"],["倾覆"],["高处坠落"],["触电"],["火灾爆炸"],["中毒窒息"],["机械伤害"],["物体打击"],["起重伤害"],["暴雨"],["大风"],["大雪"],["停电"],["停水"],["设备故障"],["中暑"],["火灾（未成事故）"],["扰民投诉"],["政府检查"],["监理/建设单位检查"],["设计变更/图纸问题"],["材料供应中断"],["劳务纠纷/群体事件"],["疫情/公共卫生"],["重污染天气预警"],["文物/地下障碍物"],["周边管线损坏"],["盗窃/治安事件"],["其他"]],
+phrase:[
+["收到监理通知单（{编号}），要求{内容}，限期{日期}整改"],
+["{编号}通知整改完成，回复单报监理复查"],
+["收到工程暂停令（{原因}），{部位}停工；复工令后恢复"],
+["发{单位}工作联系单（{编号}），事由{内容}"],
+["收到设计变更（{编号}），涉及{部位}，已交底实施"],
+["参加图纸会审，问题{数量}条，纪要签认"],
+["参加监理例会，决议{要点}，落实{责任人}"],
+["{方案}报审，审批意见{内容}"],
+["{方案}专家论证，意见{条数}条，修改闭合后报批"],
+["{材料}报验{数量}批"],
+["{材料}见证取样{数量}组送{检测机构}"],
+["{部位}浇筑令签发"],
+["{部位}动火证办理，看火人{姓名}"],
+["{部位}有限空间审批，检测/监护到位"],
+["{工序}安全技术交底{人数}人签字"],
+["内部整改单（{编号}），{问题}限期{日期}"],
+["{部门}（住建/安监/环保/人防/质监）一行{人数}人检查{内容}，提出意见{条数}条，限期整改"],
+["{单位}{人员}来场参观，项目部陪同介绍工程情况"],
+["接{单位}通知，{时段}停水/停电，提前安排"],
+["塔吊/升降机安拆、顶升、附着作业，已验收，作业人员持证（危大作业）"]],
+role:[["记录人"],["项目经理"],["执行经理"],["生产经理"],["技术负责人"],["施工员"],["质量员"],["安全员"],["安全总监"],["材料员"],["库管员"],["资料员"],["预算员"],["测量员"],["试验员"],["机械管理员"],["劳务班组长"],["总监理工程师"],["监理工程师"],["监理员"],["建设单位代表"],["设计代表"],["勘察代表"],["分包负责人"],["政府监督人员"]]
+};
+const DICT_NAMES={building:"楼栋/单体",floor:"楼层",proc:"工序/作业短语",trade:"工种",machine:"机械",material:"材料",person:"人员",weather:"天气现象",unit:"计量单位",reason:"未完成原因",acceptType:"验收类型",acceptResult:"验收结论",matStatus:"材料状态",machStatus:"机械状态",problem:"质量/安全问题",emergency:"突发事件类型",phrase:"常用短语",role:"角色"};
+const PY="钢g筋j绑b扎z混h凝n土t浇j筑z模m板b安a装z拆c除c挖w填t开k闭b垫d层c防f水s卷j材c涂t料l保b温w砌q体t抹m灰h地d面m吊d顶d门m窗c幕m墙q屋w面m脚j手s架j搭d设s验y收s藏c隐y蔽b测c量l放f线x试s块k送s检j监j理l工g程c质z量l安a全w文w明m施s工g管g理l人r员y机j械x电d焊h割g螺l纹w连l接j套t丝t压y力l渣z弧h箍g筋j梁l柱z墙q楼l梯t基j础c桩z承c台t筏f板b后h浇j带d止z水s钢g板b膨p润r土t条t快k易y收s口k网w砂s浆j罐g搅j拌b机j空k压y缩s喷p射s锚m索s钻z孔k注z浆j张z拉l锁d排p水s沟g集j水井j监j测c点d荷h载z检j查c修x整z钎q探t清q槽c运y输s车c坡p道d冠g梁l预y应y力l成c孔k根g处chù段d层c㎡平p方f立l米m吨d公g斤j千q克k个g件j套t台t辆l樘t组z批p点d处c座z口k道d步b跨k机j位w车c人r工g日r台t班b次c项x系x统t晴q多d云y阴y阵z雨y小x中z大d暴b雷l雪x雾w霾m沙s尘c风f高g温w寒h潮c左z右y科k研y门m急j诊z感g染r辅f房f库k卫w污w液y氧y室s外w防f区q结j构g单d元y塔t楼b地d下x车c首s二e三s四s五w六l七q八b九j十shí层c屋w女n儿e墙q电d梯t机j房f出c间j肥f基j坑k垫d褥r夯h实s凿z头t低d应y变b静j载z换h填t级配p砂s石屑x白b灰膏g砌块k多孔g砖干混抹筑砂浆龄期证复验标养抗渗同条件膨胀率防冻剂氯型岩棉带毯彩条薄膜缆桥架配箱柜管材铜屏蔽气密铝窗铝板石材阻尼器人防密闭活门观察窗过滤吸收器充电桩光伏组件物流传输燃气钢结构吊装粘滞见证抽检旁站平行检验分项隐蔽整改合格不合格停工复工原因材料未到机械故障天气停电图纸未定人员不足其他突发坍塌倾覆坠落触电火灾爆炸中毒窒息伤害物体打击起重暴雨大风暴雪停水停电设备故障中暑扰民投诉政府检查监理建设单位设计变更图纸问题供应中断劳务纠纷群体事件疫情公共卫生重污染预警文物地下障碍物周边管线损坏盗窃治安伤亡损失报告处置过程保护措施参观纪要联系通知回复暂停令复工令方案报审论证交底奖罚监督意见书停水停电通知浇筑令动火证看火人有限空间审批监护记录人项目经理执行生产商务技术负责人施工员质量员安全员总监材料员库管资料预算测量试验机械管理员劳务班组长总监理工程师监理员建设代表设计勘察分包政府监督张三李四王五赵六孙七周八吴九郑十冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁锺徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄麴家封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘钭厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴鬱胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍郤璩桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相查后荆红游竺权逯盖益桓公";
+const PYMAP={};
+for(const m of PY.matchAll(/([一-鿿])([a-z])/g))if(!PYMAP[m[1]])PYMAP[m[1]]=m[2];
+const PY2="反f铺p粘z贴t膜m橡x胶j自z纤x维w沥l青q厚h搭d接j宽k度d养y护h覆f盖g被b毯t彩c条t布b薄b裂l缝f渗s漏l堵d蜂f窝w麻m面m露l修x补b剔t凿z松s散s等d级j细x石s砂s浆j报b监j理l砌q块k龄l期q证z复f验y标b养y抗k渗s同t条t件j膨p胀z率l防f冻d剂j氯l型x岩y棉m带d缆l桥q架j配p箱x柜g管g材c铜t屏p蔽b气q密m铝l窗c板b石s材c阻z尼n器q人r防f密m闭b活h门m观g察c窗c过g滤l吸x收s器q充c电d桩z光g伏f组z件j物w流l输s燃r气q钢g结j构g吊d装z粘z滞z见j证z抽c检j旁p站z平p行x检j验y分f项x隐y蔽b整z改g合h格g不b停t工g复f工g原y因y材c料l未w到d机j械x故g障z天t气q停t电d图t纸z未w定d人r员y不b足z其q他t突t发f坍t塌t倾q覆f坠z落l触c电d火h灾z爆b炸z中z毒d窒z息x伤s害h物w体t打d击j起q重z暴b雨y大d风f暴b雪x停t水s设s备b故g障z中z暑s扰r民m投t诉s政z府f检j查c监j理l建j设s单d位w设s计j变b更g图t纸z问w题t供g应y中z断d劳l务w纠j纷f群q体t事s件j疫y情q公g共g卫w生s重z污w染r预y警j文w物w地d下x障z碍a物w周z边b管g线x损s坏h盗d窃q治z安a伤s亡w损s失s报b告g处c置z过g程c保b护h措c施s参c观g纪j要y联l系x通t知z回h复f暂z停t令l复f工g令l方f案a报b审s论l证z交j底d奖j罚f监j督d意y见j书s浇j筑z令l动d火h证z看k火h人r有y限x空k间j审s批p监j护h记j录l人r项x目m经j理l执z行x生s产c商s务w技j术s负f责z任r施s工g员y质z量l安a全w员y总z监j材c料l员y库k管g资z料l预y算s测c量l试s验y机j械x管g理l员y劳l务w班b组z长z总z监j理l工g程c师s监j理l员y建j设s代d表b设s计j勘k察c分f包b政z府f监j督d李l王w张z刘l陈c杨y赵z黄h周z吴w徐x孙s马m朱z胡h郭g何h高g林l罗l郑z梁l谢x宋s唐t许x韩h冯f邓d曹c彭p曾z肖x田t董d袁y潘p于y蒋j蔡c余y杜d叶y程c苏s魏w吕l丁d任r沈s姚y卢l姜j崔c钟z谭t陆l汪w范f金j石s廖l贾j夏x韦w付f方f白b邹z孟m熊x秦q邱q江j尹y薛x闫y段d雷l侯h龙l史s陶l黎l贺h顾m毛m郝h龚g邵s万w钱q严y覃q武w戴d莫m孔k向x汤t";
+for(const m of PY2.matchAll(/([一-鿿])([a-z])/g))if(!PYMAP[m[1]])PYMAP[m[1]]=m[2];
+function initials(s){let r="";for(const ch of s){r+=PYMAP[ch]||(/[a-zA-Z0-9]/.test(ch)?ch.toLowerCase():"");}return r;}
+
+/* ================= 存储 ================= */
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast("存储失败："+e.message,1)}}};
+let DB={dicts:{},recent:{},logs:[],seq:{},settings:{proj:"天津中医药大学第一附属医院石家庄医院项目施工",prefix:"SZY-RZ",defRec:""},crews:[
+ {name:"土方班组",items:[["挖掘机/装载机司机",4],["自卸汽车",0],["普工",8]]},
+ {name:"支护班组",items:[["桩机操作工",3],["普工",10],["焊工（电气焊）",2]]},
+ {name:"主体木工班组",items:[["木工",20],["普工",6]]},
+ {name:"钢筋班组",items:[["钢筋工",16],["焊工（电气焊）",2],["普工",4]]},
+ {name:"混凝土班组",items:[["混凝土工",12],["普工",6]]},
+ {name:"机电安装班组",items:[["水暖工/管工",6],["电工（临电/安装）",4],["通风工",4],["弱电工",3]]},
+ {name:"管理人员",items:[["管理人员",12]]}
+]};
+function initDB(){
+ const saved=LS.get("rz_dicts",null);
+ if(saved){DB.dicts=saved;}
+ else{
+  for(const k in SEED){DB.dicts[k]=SEED[k].map((r,i)=>seedItem(k,r,i));}
+  LS.set("rz_dicts",DB.dicts);
+ }
+ for(const k in SEED){if(!DB.dicts[k])DB.dicts[k]=SEED[k].map((r,i)=>seedItem(k,r,i));}
+ DB.recent=LS.get("rz_recent",{});DB.logs=LS.get("rz_logs",[]);DB.seq=LS.get("rz_seq",{});
+ const st=LS.get("rz_settings",null);if(st)DB.settings=st;
+ const cr=LS.get("rz_crews",null);if(cr)DB.crews=cr;
+}
+let _id=1;
+function seedItem(k,r,i){
+ const it={id:k+"_"+i,name:r[0],enabled:true,useCount:0,lastUsed:0,source:"seed"};
+ if(k==="building"){it.code=r[0];it.name=r[1];it.up=r[2];it.down=r[3];}
+ if(k==="floor"){it.code=r[0];it.name=r[1];}
+ if(k==="proc"){it.cat=r[1];it.unit=r[2];it.template=r[3];}
+ if(k==="trade"){it.cat=r[1];it.cert=r[2];}
+ if(k==="machine"){it.model=r[1];it.unit=r[2];}
+ if(k==="material"){it.spec=r[1];it.unit=r[2];}
+ if(k==="person"){it.role=r[1];it.org=r[2];}
+ if(k==="problem"){it.fix=r[1];it.cat=r[2];}
+ return it;
+}
+function saveDicts(){LS.set("rz_dicts",DB.dicts)}
+function saveAll(){saveDicts();LS.set("rz_recent",DB.recent);LS.set("rz_logs",DB.logs);LS.set("rz_seq",DB.seq);LS.set("rz_settings",DB.settings);LS.set("rz_crews",DB.crews);}
+function dict(k){return DB.dicts[k]||[]}
+function enabled(k){return dict(k).filter(x=>x.enabled)}
+function findItem(k,name){return dict(k).find(x=>x.name===name)}
+function recordUse(k,name){
+ if(!name)return;
+ const r=DB.recent[k]||[];const i=r.indexOf(name);if(i>=0)r.splice(i,1);r.unshift(name);DB.recent[k]=r.slice(0,8);
+ const it=findItem(k,name);if(it){it.useCount=(it.useCount||0)+1;it.lastUsed=Date.now();}
+ LS.set("rz_recent",DB.recent);saveDicts();
+}
+function addToDict(k,name,extra){
+ const it=Object.assign({id:k+"_u"+Date.now()+"_"+Math.floor(Math.random()*999),name,enabled:true,useCount:0,lastUsed:0,source:"user"},extra||{});
+ dict(k).push(it);saveDicts();return it;
+}
+
+/* ================= 通用工具 ================= */
+const $=s=>document.querySelector(s);
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+let toastTimer;
+function toast(msg,err){const t=$("#toast");t.textContent=msg;t.className="show"+(err?" err":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className="",2600);}
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function weekCN(ds){const w=["日","一","二","三","四","五","六"];return "星期"+w[new Date(ds+"T00:00:00").getDay()];}
+function fmtDateCN(ds){const p=ds.split("-");return p[0]+"年"+Number(p[1])+"月"+Number(p[2])+"日";}
+function download(name,content,type){const b=new Blob([content],{type:type||"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);}
+
+/* ================= 三段式下拉组件 ================= */
+function makeCombo(mount,dictKey,opts){
+ opts=opts||{};
+ const wrap=el("div","combo");
+ const inp=el("input");inp.type="text";inp.placeholder=opts.ph||"输入检索或直接打字";inp.autocomplete="off";
+ if(opts.value)inp.value=opts.value;
+ if(opts.field)inp.dataset.k=opts.field;
+ const pop=el("div","pop");pop.hidden=true;
+ wrap.append(inp,pop);mount.replaceChildren(wrap);
+ let items=[];
+ function renderPop(q){
+  q=(q||"").trim();
+  const all=enabled(dictKey).filter(opts.filterFn?opts.filterFn(inp.closest(".row")):()=>true);
+  const ql=q.toLowerCase(),qi=initials(q);
+  const match=it=>{
+   if(!q)return true;
+   const nm=it.name.toLowerCase();
+   if(nm.includes(ql))return true;
+   const sub=(it.model||it.spec||it.code||it.cat||it.role||"").toLowerCase();
+   if(sub&&sub.includes(ql))return true;
+   if(qi&&initials(it.name).includes(qi))return true;
+   return false;
+  };
+  const recent=(DB.recent[dictKey]||[]).map(n=>all.find(x=>x.name===n)).filter(Boolean).slice(0,5);
+  const rest=all.filter(match);
+  pop.replaceChildren();
+  if(recent.length&&(!q||recent.some(match))){
+   pop.append(el("div","grp","最近使用"));
+   recent.filter(match).forEach(it=>pop.append(itemEl(it,true)));
+  }
+  pop.append(el("div","grp",q?"匹配结果":"全部（"+rest.length+"）"));
+  if(!rest.length)pop.append(el("div","empty","无匹配项"));
+  rest.slice(0,200).forEach(it=>pop.append(itemEl(it,false)));
+  if(q&&!all.some(x=>x.name===q)&&opts.allowAdd!==false){
+   const a=el("div","it addnew","＋ 将『"+esc(q)+"』加入字典并选用");
+   a.onmousedown=e=>{e.preventDefault();addToDict(dictKey,q);pick(q);toast("已加入字典："+q);};
+   pop.append(a);
+  }
+ }
+ function itemEl(it,isRecent){
+  const d=el("div","it");
+  d.append(el("span",null,esc(it.name)));
+  if(isRecent)d.append(el("span","tag","最近"));
+  const sub=it.model||it.spec||(it.cat?it.cat:"")||(it.role||"")||(it.unit?"["+it.unit+"]":"");
+  if(sub)d.append(el("span","sub",esc(sub)));
+  d.onmousedown=e=>{e.preventDefault();pick(it.name,it);};
+  return d;
+ }
+ function pick(name,it){
+  inp.value=name;pop.hidden=true;recordUse(dictKey,name);
+  if(opts.onPick)opts.onPick(name,it||findItem(dictKey,name),inp.closest(".row"));
+  inp.dispatchEvent(new Event("change",{bubbles:true}));
+ }
+ inp.addEventListener("focus",()=>{renderPop(inp.value);pop.hidden=false;});
+ inp.addEventListener("input",()=>{renderPop(inp.value);pop.hidden=false;});
+ inp.addEventListener("blur",()=>{setTimeout(()=>{pop.hidden=true;},150);if(inp.value.trim())recordUse(dictKey,inp.value.trim());});
+ inp.addEventListener("keydown",e=>{if(e.key==="Escape")pop.hidden=true;});
+ return {input:inp,wrap,set(v){inp.value=v||"";},get(){return inp.value.trim();}};
+}
+
+/* ================= 行定义与渲染 ================= */
+const HOURS={上午:[6,7,8,9,10,11,12],下午:[12,13,14,15,16,17,18],晚上:[18,19,20,21,22,23,24]};
+const SPECS={
+progress:[
+ {k:"building",l:"楼栋/区域",t:"combo",d:"building"},
+ {k:"floor",l:"楼层",t:"combo",d:"floor",floorFilter:true},
+ {k:"seg",l:"流水段/详细部位",t:"text",ph:"选填"},
+ {k:"proc",l:"工序",t:"combo",d:"proc"},
+ {k:"pct",l:"完成百分比",t:"range"}],
+today:[
+ {k:"building",l:"楼栋/区域",t:"combo",d:"building"},
+ {k:"floor",l:"楼层",t:"combo",d:"floor",floorFilter:true},
+ {k:"seg",l:"流水段/详细部位",t:"text",ph:"选填"},
+ {k:"proc",l:"工序",t:"combo",d:"proc",procPick:true},
+ {k:"qty",l:"工程量",t:"num",ph:"数值"},
+ {k:"unit",l:"单位",t:"combo",d:"unit"},
+ {k:"period",l:"时段",t:"select",o:["上午","下午","晚上"]},
+ {k:"h1",l:"起(整点)",t:"select",o:[]},
+ {k:"h2",l:"止(整点)",t:"select",o:[]}],
+plan:[
+ {k:"building",l:"楼栋/区域",t:"combo",d:"building"},
+ {k:"floor",l:"楼层",t:"combo",d:"floor",floorFilter:true},
+ {k:"seg",l:"流水段/详细部位",t:"text",ph:"选填"},
+ {k:"proc",l:"工序",t:"combo",d:"proc",procPick:true},
+ {k:"qty",l:"工程量",t:"num",ph:"选填"},
+ {k:"unit",l:"单位",t:"combo",d:"unit"}],
+undone:[
+ {k:"item",l:"未完成事项",t:"text"},
+ {k:"reason",l:"原因",t:"combo",d:"reason"}],
+labor:[
+ {k:"trade",l:"工种",t:"combo",d:"trade"},
+ {k:"count",l:"人数",t:"num"}],
+machine:[
+ {k:"name",l:"机械名称型号",t:"combo",d:"machine"},
+ {k:"count",l:"数量",t:"num"},
+ {k:"status",l:"运转状态",t:"combo",d:"machStatus"}],
+material:[
+ {k:"name",l:"材料名称规格",t:"combo",d:"material"},
+ {k:"qty",l:"数量",t:"num"},
+ {k:"unit",l:"单位",t:"combo",d:"unit"},
+ {k:"status",l:"状态",t:"combo",d:"matStatus"},
+ {k:"remark",l:"备注",t:"text",ph:"选填"}],
+accept:[
+ {k:"time",l:"时间",t:"time"},
+ {k:"person",l:"监理人员",t:"combo",d:"person"},
+ {k:"building",l:"楼栋/区域",t:"combo",d:"building"},
+ {k:"floor",l:"楼层",t:"combo",d:"floor",floorFilter:true},
+ {k:"type",l:"验收类型",t:"combo",d:"acceptType"},
+ {k:"result",l:"结论",t:"combo",d:"acceptResult"}],
+quality:[
+ {k:"problem",l:"问题描述",t:"combo",d:"problem",problemPick:true},
+ {k:"fix",l:"处理方法",t:"text"}],
+emergency:[
+ {k:"type",l:"类型",t:"combo",d:"emergency"},
+ {k:"time",l:"时间",t:"text",ph:"如 14:30"},
+ {k:"handle",l:"处置过程",t:"area"},
+ {k:"loss",l:"损失",t:"text",ph:"无/具体情况"},
+ {k:"report",l:"报告对象",t:"text"}],
+other:[{k:"text",l:"事项内容",t:"area",ph:"参观/检查/文书等，可从常用短语库插入"}]
+};
+function floorFilterFn(row){
+ if(!row)return ()=>true;
+ const bInp=row.querySelector('[data-k="building"]');
+ const b=bInp?findItem("building",bInp.value.trim()):null;
+ return it=>{
+  if(!b)return true;
+  const c=it.code||"";
+  if(/^(\d+)F$/.test(c)){const n=Number(c.match(/^(\d+)F$/)[1]);return n<=b.up;}
+  if(c==="B2")return b.down>=2;
+  if(c==="B1")return b.down>=1;
+  if(c==="DT")return b.up>=8;
+  return true;
+ };
+}
+function hourOptions(period){return (HOURS[period]||HOURS.上午).map(h=>h+":00");}
+function addRow(type,data){
+ const box=$("#rows-"+type);
+ const row=el("div","row");row.dataset.type=type;
+ const head=el("div","rhead","<span>"+(box.children.length+1)+"</span>");
+ const del=el("button","del mini","删除");del.onclick=()=>{row.remove();renum(box);draftSoon();};
+ head.append(del);row.append(head);
+ const grid=el("div","grid");
+ SPECS[type].forEach(f=>{
+  const fld=el("div","fld"+((f.t==="area"||f.k==="seg")?" full":""));
+  fld.append(el("label",null,f.l));
+  let ctl;
+  if(f.t==="combo"){
+   const mount=el("div");fld.append(mount);
+   const co=makeCombo(mount,f.d,{field:f.k,ph:f.ph,value:data?data[f.k]:"",
+    filterFn:f.floorFilter?floorFilterFn:null,
+    onPick:f.procPick?(name,it,r)=>{
+      if(it&&it.unit){const u=r.querySelector('[data-k="unit"]');if(u&&!u.value)u.value=it.unit;}
+    }:f.problemPick?(name,it,r)=>{
+      if(it&&it.fix){const fx=r.querySelector('[data-k="fix"]');if(fx&&!fx.value)fx.value=it.fix;}
+    }:null});
+   ctl=co.input;
+  }else if(f.t==="select"){
+   ctl=el("select");ctl.dataset.k=f.k;
+   const os=f.k==="h1"||f.k==="h2"?hourOptions(data&&data.period||"上午"):f.o;
+   const blank=el("option",null,"");blank.value="";ctl.append(blank);
+   os.forEach(o=>{const op=el("option",null,o);op.value=o;ctl.append(op);});
+   if(data&&data[f.k])ctl.value=data[f.k];
+   if(f.k==="period")ctl.onchange=()=>{
+    ["h1","h2"].forEach(hk=>{
+     const s=row.querySelector('[data-k="'+hk+'"]');const old=s.value;
+     s.replaceChildren(el("option",null,""));
+     hourOptions(ctl.value).forEach(o=>{const op=el("option",null,o);op.value=o;s.append(op);});
+     if([...s.options].some(o=>o.value===old))s.value=old;
+    });draftSoon();
+   };
+   fld.append(ctl);
+  }else if(f.t==="range"){
+   const w=el("div","rangewrap");
+   ctl=el("input");ctl.type="range";ctl.min=0;ctl.max=100;ctl.step=5;ctl.dataset.k=f.k;ctl.value=data&&data[f.k]!=null?data[f.k]:50;
+   const out=el("output",null,ctl.value+"%");
+   ctl.oninput=()=>{out.textContent=ctl.value+"%";};
+   w.append(ctl,out);fld.append(w);
+  }else if(f.t==="area"){
+   ctl=el("textarea");ctl.dataset.k=f.k;ctl.placeholder=f.ph||"";ctl.value=data&&data[f.k]||"";fld.append(ctl);
+  }else{
+   ctl=el("input");ctl.type=f.t==="num"?"number":f.t==="time"?"time":"text";
+   if(f.t==="num"){ctl.inputMode="decimal";ctl.min=0;}
+   ctl.dataset.k=f.k;ctl.placeholder=f.ph||"";ctl.value=data&&data[f.k]!=null?data[f.k]:"";
+   fld.append(ctl);
+  }
+  grid.append(fld);
+ });
+ row.append(grid);box.append(row);draftSoon();
+ return row;
+}
+function renum(box){[...box.children].forEach((r,i)=>r.querySelector(".rhead span").textContent=i+1);}
+function rowsData(type){
+ return [...$("#rows-"+type).children].map(r=>{
+  const o={};r.querySelectorAll("[data-k]").forEach(c=>{o[c.dataset.k]=c.type==="checkbox"?c.checked:c.value.trim?c.value.trim():c.value;});
+  return o;
+ });
+}
+function clearRows(type){$("#rows-"+type).replaceChildren();}
+function fillRows(type,arr){clearRows(type);(arr||[]).forEach(d=>addRow(type,d));}
+
+/* ================= 表头与状态 ================= */
+let curId=null;
+const combos={};
+function initHeader(){
+ combos.recorder=makeCombo($("#cRecorder"),"person",{field:"recorder",ph:"记录人（必填）",value:DB.settings.defRec});
+ combos.w1=makeCombo($("#cW1"),"weather",{ph:"如：晴"});
+ combos.w2=makeCombo($("#cW2"),"weather",{ph:"如：小雨"});
+ combos.defRec=makeCombo($("#cDefRec"),"person",{ph:"默认记录人",value:DB.settings.defRec,onPick:n=>{DB.settings.defRec=n;LS.set("rz_settings",DB.settings);}});
+ $("#fDate").value=todayStr();
+ $("#fDate").addEventListener("change",updateDateHints);
+ $("#fZhuan").addEventListener("change",()=>{$("#cW2").hidden=!$("#fZhuan").checked;updateDateHints();});
+ ["fW1","fTmin","fTmax","fWind"].forEach(()=>{});
+ $("#cW1").addEventListener("change",updateDateHints);
+ $("#cW2").addEventListener("change",updateDateHints);
+ $("#fTmin").addEventListener("change",updateDateHints);
+ $("#fTmax").addEventListener("change",updateDateHints);
+ $("#fWind").addEventListener("change",updateDateHints);
+ $("#undoneNone").addEventListener("change",()=>{$("#rows-undone").style.display=$("#undoneNone").checked?"none":"";draftSoon();});
+ $("#stopNone").addEventListener("change",()=>{$("#stopForm").hidden=$("#stopNone").checked;draftSoon();});
+ updateDateHints();
+}
+function updateDateHints(){
+ const ds=$("#fDate").value;
+ $("#fWeek").value=ds?weekCN(ds):"";
+ const isToday=ds===todayStr();
+ $("#backWrap").hidden=isToday;
+ const hints=[];
+ if(ds&&!isToday){
+  const days=Math.round((new Date(todayStr())-new Date(ds))/86400000);
+  hints.push("【补记】非当日日志，须填写补记原因。"+(days>7?"⚠ 已超过7天，存在合规风险，请尽快补齐签认。":""));
+ }
+ if(ds&&ds<"2026-09-15")hints.push("⚠ 早于开工日期2026-09-15，属开工前记录。");
+ if(ds){
+  const md=ds.slice(5);
+  if(md>="11-15"||md<="03-15")hints.push("❄ 冬期施工时段（11-15~次年3-15）：请记录测温、保温覆盖、同条件试块留置；出罐≥15℃、入模≥10℃，≤−15℃停止浇筑。");
+ }
+ const w1=combos.w1?combos.w1.get():"",w2=$("#fZhuan").checked&&combos.w2?combos.w2.get():"";
+ const w=w1+(w2?"转"+w2:"");
+ if(/大雨|暴雨|大暴雨/.test(w))hints.push("🌧 大雨/暴雨：基坑停止开挖，排水泵全开，边坡覆盖，雨后复查支护与监测。");
+ if(/雪/.test(w))hints.push("🌨 雪后：脚手板/通道除雪防滑，架体荷载复查。");
+ const wind=$("#fWind").value;
+ if(/6级|7级|8级/.test(wind))hints.push("💨 6级及以上风：停止吊装/架体搭拆/吊篮作业，塔吊吊钩收回、大臂顺风。");
+ const tmin=parseFloat($("#fTmin").value),tmax=parseFloat($("#fTmax").value);
+ if(!isNaN(tmin)&&!isNaN(tmax)&&tmax<tmin)hints.push("⚠ 最高气温低于最低气温，请核对。");
+ if(!isNaN(tmin)&&tmin<=-15)hints.push("🥶 ≤−15℃：停止混凝土浇筑，已浇部位保温复查。");
+ if(!isNaN(tmax)&&tmax>=35)hints.push("🥵 ≥35℃：错峰施工、防暑降温；≥40℃停止当日露天作业。");
+ $("#hintBox").innerHTML=hints.map(esc).join("<br>");
+ $("#headErr").textContent="";
+}
+function weatherText(){
+ const w1=combos.w1.get();let w=w1;
+ if($("#fZhuan").checked&&combos.w2.get())w+="转"+combos.w2.get();
+ const wind=$("#fWind").value;if(wind)w+="，风力"+wind;
+ return w;
+}
+function tempText(){
+ const a=$("#fTmin").value,b=$("#fTmax").value;
+ if(a===""&&b==="")return "";
+ return (a===""?"?":a)+"℃-"+(b===""?"?":b)+"℃";
+}
+
+/* ================= 收集 / 载入 ================= */
+function collect(){
+ return {
+  no:$("#fNo").value,date:$("#fDate").value,week:$("#fWeek").value,
+  backReason:$("#fBack").value.trim(),
+  weather:weatherText(),w1:combos.w1.get(),w2:$("#fZhuan").checked?combos.w2.get():"",zhuan:$("#fZhuan").checked,
+  wind:$("#fWind").value,tmin:$("#fTmin").value,tmax:$("#fTmax").value,
+  recorder:combos.recorder.get(),
+  progress:rowsData("progress"),today:rowsData("today"),plan:rowsData("plan"),
+  undoneNone:$("#undoneNone").checked,undone:rowsData("undone"),
+  labor:rowsData("labor"),machine:rowsData("machine"),material:rowsData("material"),
+  accept:rowsData("accept"),quality:rowsData("quality"),
+  stopNone:$("#stopNone").checked,
+  stop:{reason:$("#stopReason").value.trim(),start:$("#stopStart").value.trim(),end:$("#stopEnd").value.trim(),protect:$("#stopProtect").value.trim()},
+  emergency:rowsData("emergency"),other:rowsData("other")
+ };
+}
+function loadLog(d,keepNo){
+ curId=d.id||null;
+ $("#fNo").value=keepNo&&d.no?d.no:"";
+ $("#fDate").value=d.date||todayStr();
+ $("#fBack").value=d.backReason||"";
+ combos.w1.set(d.w1||"");combos.w2.set(d.w2||"");
+ $("#fZhuan").checked=!!d.zhuan;$("#cW2").hidden=!d.zhuan;
+ $("#fWind").value=d.wind||"";$("#fTmin").value=d.tmin!=null?d.tmin:"";$("#fTmax").value=d.tmax!=null?d.tmax:"";
+ combos.recorder.set(d.recorder||DB.settings.defRec||"");
+ ["progress","today","plan","undone","labor","machine","material","accept","quality","emergency","other"].forEach(t=>fillRows(t,d[t]));
+ $("#undoneNone").checked=!!d.undoneNone;$("#rows-undone").style.display=d.undoneNone?"none":"";
+ $("#stopNone").checked=d.stopNone!==false;$("#stopForm").hidden=d.stopNone!==false;
+ const s=d.stop||{};$("#stopReason").value=s.reason||"";$("#stopStart").value=s.start||"";$("#stopEnd").value=s.end||"";$("#stopProtect").value=s.protect||"";
+ updateDateHints();updateLaborSum();draftSoon();
+}
+function newLog(force){
+ if(!force&&!confirm("新建日志将清空当前表单（未保存内容会丢失），继续？"))return;
+ curId=null;
+ loadLog({date:todayStr(),recorder:DB.settings.defRec,stopNone:true,undoneNone:true});
+ $("#fNo").value="";
+ toast("已新建空白日志");
+}
+
+/* ================= 校验与成文 ================= */
+function validate(d){
+ const errs=[];
+ if(!d.date)errs.push("日期必填");
+ if(d.date&&d.date>todayStr())errs.push("日期不能晚于今天");
+ if(!d.recorder)errs.push("记录人必填");
+ if(d.date&&d.date!==todayStr()&&!d.backReason)errs.push("非当日日志须填写补记原因");
+ const validToday=d.today.filter(r=>r.building&&r.proc);
+ if(!validToday.length)errs.push("至少填写一条今日作业内容（楼栋+工序）");
+ d.today.forEach((r,i)=>{
+  if((r.building||r.proc)&&(!r.building||!r.proc))errs.push("今日作业第"+(i+1)+"条：楼栋与工序须同时填写");
+  if(r.qty&&!(Number(r.qty)>0))errs.push("今日作业第"+(i+1)+"条：工程量须为大于0的数值");
+ });
+ const tmin=parseFloat(d.tmin),tmax=parseFloat(d.tmax);
+ if(!isNaN(tmin)&&!isNaN(tmax)&&tmax<tmin)errs.push("最高气温须≥最低气温");
+ if((!isNaN(tmin)&&(tmin<-20||tmin>45))||(!isNaN(tmax)&&(tmax<-20||tmax>45)))errs.push("气温超出−20~45℃常规范围，请确认实测值");
+ return errs;
+}
+function locStr(r){
+ const b=findItem("building",r.building);
+ let s=r.building||"";
+ if(r.floor)s+=r.floor;
+ if(r.seg)s+="（"+r.seg+"）";
+ return s;
+}
+function fillTemplate(tpl,r){
+ const map={"{部位":locStr(r),"{工序":r.proc||"","{数量":r.qty||"","{单位":r.unit||"","{强度等级":"","{规格":"","{班组":"","{机械":"","{时间":""};
+ let s=tpl;
+ for(const k in map)s=s.split(k+"}").join(map[k]);
+ s=s.replace(/\{[^}]*\}/g,"").replace(/\s{2,}/g," ").trim();
+ return s;
+}
+function todayLine(r){
+ const it=findItem("proc",r.proc);
+ let time="";
+ if(r.period){time=r.period;if(r.h1)time+=r.h1.replace(":00","")+":00";if(r.h2)time+="–"+r.h2.replace(":00","")+":00";}
+ let body;
+ if(it&&it.template){body=fillTemplate(it.template,r);}
+ else{body=locStr(r)+(r.proc?"进行"+r.proc:"");if(r.qty)body+="，工程量"+r.qty+(r.unit||"");}
+ return body+(time?"（"+time+"）":"");
+}
+function generateText(d){
+ const L=[];
+ const back=d.date!==todayStr()?"【补记】":"";
+ L.push("施 工 日 志"+back);
+ L.push("编号："+(d.no||"（未保存）"));
+ L.push("项目名称："+DB.settings.proj);
+ L.push("日期："+fmtDateCN(d.date)+" "+d.week+(d.backReason?"　补记原因："+d.backReason:""));
+ L.push("天气："+(d.weather||"无")+(tempText()?"　气温："+tempText():""));
+ L.push("记录人："+d.recorder);
+ L.push("");
+ L.push("一、截至今日施工进度");
+ const pg=d.progress.filter(r=>r.building||r.proc);
+ if(pg.length)pg.forEach((r,i)=>L.push((i+1)+". "+locStr(r)+"："+(r.proc||"")+" 完成"+(r.pct||0)+"%"));
+ else L.push("无");
+ L.push("");
+ L.push("二、今日作业内容");
+ d.today.filter(r=>r.building&&r.proc).forEach((r,i)=>L.push((i+1)+". "+todayLine(r)));
+ L.push("");
+ L.push("三、明日计划");
+ const pl=d.plan.filter(r=>r.building||r.proc);
+ if(pl.length)pl.forEach((r,i)=>{
+  let s=locStr(r)+(r.proc?"进行"+r.proc:"");
+  if(r.qty)s+="，计划工程量"+r.qty+(r.unit||"");
+  L.push((i+1)+". "+s);
+ });else L.push("无");
+ L.push("");
+ L.push("四、未完成事项");
+ if(d.undoneNone||!d.undone.filter(r=>r.item).length)L.push("无");
+ else d.undone.filter(r=>r.item).forEach((r,i)=>L.push((i+1)+". "+r.item+(r.reason?"（原因："+r.reason+"）":"")));
+ L.push("");
+ L.push("五、资源投入");
+ L.push("（一）人员");
+ const lb=d.labor.filter(r=>r.trade&&Number(r.count)>0);
+ if(lb.length){
+  const total=lb.reduce((s,r)=>s+Number(r.count),0);
+  const mg=lb.filter(r=>{const t=findItem("trade",r.trade);return t&&t.cat==="管理";}).reduce((s,r)=>s+Number(r.count),0);
+  L.push(lb.map(r=>r.trade+"×"+r.count+"人").join("、")+"。");
+  L.push("合计"+total+"人，其中管理人员"+mg+"人、作业人员"+(total-mg)+"人。");
+ }else L.push("无");
+ L.push("（二）机械");
+ const mc=d.machine.filter(r=>r.name);
+ if(mc.length)mc.forEach((r,i)=>L.push((i+1)+". "+r.name+"×"+(r.count||1)+(r.status?"（"+r.status+"）":"")));
+ else L.push("无");
+ L.push("（三）材料");
+ const mt=d.material.filter(r=>r.name);
+ if(mt.length)mt.forEach((r,i)=>L.push((i+1)+". "+r.name+(r.qty?" "+r.qty+(r.unit||""):"")+(r.status?"（"+r.status+"）":"")+(r.remark?"，"+r.remark:"")));
+ else L.push("无");
+ L.push("");
+ L.push("六、质量管理");
+ L.push("（一）验收记录");
+ const ac=d.accept.filter(r=>r.type||r.person||r.building);
+ if(ac.length)ac.forEach((r,i)=>L.push((i+1)+". "+(r.time?r.time+" ":"")+(r.person?r.person:"监理")+"对"+(locStr(r)||"相关部位")+"进行"+(r.type||"验收")+"，结论："+(r.result||"合格")+"。"));
+ else L.push("无");
+ L.push("（二）质量问题");
+ const ql=d.quality.filter(r=>r.problem);
+ if(ql.length)ql.forEach((r,i)=>L.push((i+1)+". 发现"+r.problem+"，处理："+(r.fix||"按方案处理")+"。"));
+ else L.push("无");
+ L.push("");
+ L.push("七、特殊情况");
+ const hasStop=!d.stopNone&&(d.stop.reason||d.stop.start);
+ const em=d.emergency.filter(r=>r.type);
+ const ot=d.other.filter(r=>r.text);
+ if(!hasStop&&!em.length&&!ot.length){L.push("无停工/复工；无突发事件；无其他事项。");}
+ else{
+  L.push("（一）停工/复工");
+  if(hasStop)L.push("原因："+d.stop.reason+"；起止："+(d.stop.start||"")+"至"+(d.stop.end||"")+"；现场保护措施："+(d.stop.protect||"无")+"。");
+  else L.push("无");
+  L.push("（二）突发事件");
+  if(em.length)em.forEach((r,i)=>L.push((i+1)+". "+(r.time?r.time+" ":"")+"发生"+r.type+"。处置："+(r.handle||"")+"；损失："+(r.loss||"无")+"；报告对象："+(r.report||"无")+"。"));
+  else L.push("无");
+  L.push("（三）其他事项");
+  if(ot.length)ot.forEach((r,i)=>L.push((i+1)+". "+r.text.replace(/\{[^}]*\}/g,"").trim()));
+  else L.push("无");
+ }
+ return L.join("\n");
+}
+
+/* ================= 保存 / 编号 / 历史 ================= */
+function nextNo(date){
+ const key=date.replace(/-/g,"");
+ const n=(DB.seq[key]||0)+1;DB.seq[key]=n;
+ return DB.settings.prefix+"-"+key+"-"+String(n).padStart(2,"0");
+}
+function saveLog(){
+ const d=collect();
+ const errs=validate(d);
+ if(errs.length){toast("保存失败："+errs[0],1);$("#headErr").innerHTML=errs.map(esc).join("<br>");return;}
+ if(curId){
+  const i=DB.logs.findIndex(x=>x.id===curId);
+  if(i>=0){d.no=DB.logs[i].no;d.id=curId;DB.logs[i]={id:curId,no:d.no,date:d.date,recorder:d.recorder,updatedAt:Date.now(),data:d,text:generateText(d)};}
+ }else{
+  d.id="log_"+Date.now();d.no=nextNo(d.date);curId=d.id;
+  DB.logs.unshift({id:d.id,no:d.no,date:d.date,recorder:d.recorder,updatedAt:Date.now(),data:d,text:generateText(d)});
+ }
+ $("#fNo").value=d.no;
+ LS.set("rz_logs",DB.logs);LS.set("rz_seq",DB.seq);
+ renderHistory();toast("已保存 "+d.no);
+}
+function renderHistory(){
+ const box=$("#histList");box.replaceChildren();
+ if(!DB.logs.length){box.append(el("div","empty","暂无历史记录"));return;}
+ DB.logs.forEach(g=>{
+  const it=el("div","hitem");
+  it.append(el("span",null,"<b>"+esc(g.no)+"</b>　"+esc(g.date)+"　"+esc(g.recorder||"")));
+  const ops=el("span","ops");
+  const bLoad=el("button","mini","打开");bLoad.onclick=()=>{loadLog(g.data,true);window.scrollTo({top:0,behavior:"smooth"});toast("已载入 "+g.no);};
+  const bTxt=el("button","mini","文本");bTxt.onclick=()=>{openModal(g.text,g.no);};
+  const bDel=el("button","mini del","删除");bDel.onclick=()=>{
+   if(!confirm("删除日志 "+g.no+"？（编号不回收）"))return;
+   DB.logs=DB.logs.filter(x=>x.id!==g.id);LS.set("rz_logs",DB.logs);
+   if(curId===g.id)curId=null;
+   renderHistory();toast("已删除");
+  };
+  ops.append(bLoad,bTxt,bDel);it.append(ops);box.append(it);
+ });
+}
+function copyYesterday(){
+ const ds=$("#fDate").value||todayStr();
+ const prev=DB.logs.filter(g=>g.date<ds&&g.id!==curId).sort((a,b)=>b.date.localeCompare(a.date))[0]||DB.logs.filter(g=>g.id!==curId)[0];
+ if(!prev){toast("没有可复制的历史日志",1);return;}
+ const d=prev.data;
+ fillRows("progress",d.progress);fillRows("labor",d.labor);fillRows("machine",d.machine);
+ fillRows("today",(d.plan||[]).map(p=>({building:p.building,floor:p.floor,seg:p.seg,proc:p.proc,qty:p.qty,unit:p.unit,period:"上午"})));
+ updateLaborSum();draftSoon();
+ toast("已复制 "+prev.date+" 日志：进度/人员/机械，明日计划→今日内容");
+}
+
+/* ================= 输出：复制 / TXT / 打印 ================= */
+let lastText="",lastNo="";
+function openModal(text,no){lastText=text;lastNo=no||"施工日志";$("#modalTitle").textContent="日志文本 "+(no||"");$("#modalText").value=text;$("#modal").hidden=false;}
+function doCopy(text){
+ const ok=()=>toast("已复制到剪贴板");
+ if(navigator.clipboard&&window.isSecureContext!==false){
+  navigator.clipboard.writeText(text).then(ok).catch(()=>fallbackCopy(text));
+ }else fallbackCopy(text);
+}
+function fallbackCopy(text){
+ const ta=$("#modalText");ta.value=text;$("#modal").hidden=false;ta.focus();ta.select();
+ try{if(document.execCommand("copy")){toast("已复制到剪贴板");return;}}catch(e){}
+ toast("自动复制失败，请在弹窗中长按全选复制",1);
+}
+function genAndCopy(){
+ const d=collect();
+ const errs=validate(d);
+ if(errs.length){$("#headErr").innerHTML=errs.map(esc).join("<br>");toast("无法生成："+errs[0],1);return;}
+ $("#headErr").textContent="";
+ const text=generateText(d);
+ openModal(text,d.no);doCopy(text);
+}
+function doPrint(){
+ const d=collect();
+ const text=lastText||generateText(d);
+ $("#printArea").innerHTML="<h1>施 工 日 志</h1><pre>"+esc(text.replace(/^施 工 日 志.*\n/,""))+"</pre>"+
+ "<div class='sign'><span>记录人：____________</span><span>技术负责人：____________</span><span>项目经理：____________</span></div>"+
+ "<div class='sign'><span>日期：____________</span><span>监理阅签：____________</span></div>";
+ window.print();
+}
+
+/* ================= 班组 / 短语 ================= */
+function updateLaborSum(){
+ const lb=rowsData("labor").filter(r=>r.trade&&Number(r.count)>0);
+ const total=lb.reduce((s,r)=>s+Number(r.count),0);
+ $("#laborSum").textContent=total?("当前合计："+total+" 人"):"";
+}
+function applyCrew(c){
+ c.items.forEach(([trade,count])=>{if(count>0)addRow("labor",{trade,count});});
+ updateLaborSum();toast("已填入班组："+c.name);
+}
+function renderCrews(){
+ const box=$("#crewList");box.replaceChildren();
+ DB.crews.forEach((c,i)=>{
+  const it=el("div","hitem");
+  it.append(el("span",null,"<b>"+esc(c.name)+"</b>　"+esc(c.items.map(x=>x[0]+"×"+x[1]).join("、"))));
+  const ops=el("span","ops");
+  const bA=el("button","mini add","填入");bA.onclick=()=>applyCrew(c);
+  const bE=el("button","mini","编辑");bE.onclick=()=>{
+   const s=prompt("班组配置（格式：工种:人数,工种:人数）",c.items.map(x=>x[0]+":"+x[1]).join(","));
+   if(s==null)return;
+   c.items=s.split(/[,，]/).map(x=>x.split(/[:：]/)).filter(p=>p[0]&&Number(p[1])>0).map(p=>[p[0].trim(),Number(p[1])]);
+   LS.set("rz_crews",DB.crews);renderCrews();
+  };
+  const bD=el("button","mini del","删除");bD.onclick=()=>{if(confirm("删除班组「"+c.name+"」？")){DB.crews.splice(i,1);LS.set("rz_crews",DB.crews);renderCrews();}};
+  ops.append(bA,bE,bD);it.append(ops);box.append(it);
+ });
+}
+function openPhraseLib(){
+ const box=el("div");
+ enabled("phrase").forEach(p=>{
+  const b=el("button","mini",esc(p.name));b.style.cssText="display:block;width:100%;text-align:left;margin:4px 0";
+  b.onclick=()=>{addRow("other",{text:p.name});$("#modal").hidden=true;toast("已插入短语，请补全占位符");};
+  box.append(b);
+ });
+ $("#modalTitle").textContent="常用短语库（点击插入到其他事项）";
+ $("#modalText").value="";$("#modalText").hidden=true;
+ const old=$("#modal .box");
+ const holder=el("div");holder.id="phraseHolder";holder.style.cssText="overflow:auto;max-height:55vh";holder.append(box);
+ old.insertBefore(holder,$("#modal .mops"));
+ $("#modal").hidden=false;
+}
+function closeModal(){$("#modal").hidden=true;$("#modalText").hidden=false;const h=$("#phraseHolder");if(h)h.remove();}
+
+/* ================= 设置 / 字典维护 ================= */
+function initSettings(){
+ $("#sProj").value=DB.settings.proj;$("#sPrefix").value=DB.settings.prefix;
+ $("#sProj").onchange=()=>{DB.settings.proj=$("#sProj").value.trim()||DB.settings.proj;LS.set("rz_settings",DB.settings);$("#projName").textContent=DB.settings.proj;};
+ $("#sPrefix").onchange=()=>{DB.settings.prefix=$("#sPrefix").value.trim()||"SZY-RZ";LS.set("rz_settings",DB.settings);};
+ const sel=$("#dictSel");
+ for(const k in DICT_NAMES){const o=el("option",null,DICT_NAMES[k]);o.value=k;sel.append(o);}
+ sel.onchange=renderDictList;
+ $("#btnDictAdd").onclick=()=>{
+  const n=$("#dictNew").value.trim();if(!n)return;
+  addToDict(sel.value,n);$("#dictNew").value="";renderDictList();toast("已添加");
+ };
+ renderDictList();renderCrews();
+ $("#btnCrewAdd").onclick=()=>{
+  const name=prompt("班组名称");if(!name)return;
+  const s=prompt("配置（格式：工种:人数,工种:人数）","普工:10");if(s==null)return;
+  const items=s.split(/[,，]/).map(x=>x.split(/[:：]/)).filter(p=>p[0]&&Number(p[1])>0).map(p=>[p[0].trim(),Number(p[1])]);
+  DB.crews.push({name,items});LS.set("rz_crews",DB.crews);renderCrews();
+ };
+}
+function renderDictList(){
+ const k=$("#dictSel").value;const box=$("#dictList");box.replaceChildren();
+ dict(k).forEach(it=>{
+  const row=el("div","ditem"+(it.enabled?"":" off"));
+  const chk=el("input");chk.type="checkbox";chk.checked=it.enabled;chk.title="启用/停用";
+  chk.onchange=()=>{it.enabled=chk.checked;saveDicts();renderDictList();};
+  row.append(chk);
+  const sub=it.model||it.spec||it.unit||it.role||it.cat||"";
+  row.append(el("span","nm",esc(it.name)+(sub?" <small style='color:var(--mut)'>"+esc(sub)+"</small>":"")));
+  const bE=el("button","mini","改");bE.onclick=()=>{
+   const n=prompt("修改名称",it.name);if(n==null||!n.trim())return;
+   it.name=n.trim();saveDicts();renderDictList();
+  };
+  const bD=el("button","mini del","删");bD.onclick=()=>{
+   if(!confirm("删除字典条目「"+it.name+"」？历史日志中的文字不受影响。"))return;
+   DB.dicts[k]=DB.dicts[k].filter(x=>x.id!==it.id);saveDicts();renderDictList();
+  };
+  row.append(bE,bD);box.append(row);
+ });
+}
+
+/* ================= 备份 / 草稿 ================= */
+function exportBackup(){
+ saveAll();
+ const data={app:"construction-log",version:1,exportedAt:new Date().toISOString(),dicts:DB.dicts,recent:DB.recent,logs:DB.logs,seq:DB.seq,settings:DB.settings,crews:DB.crews};
+ download("施工日志备份_"+todayStr()+".json",JSON.stringify(data,null,1),"application/json");
+ toast("已导出JSON备份");
+}
+function importBackup(file){
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+   const d=JSON.parse(r.result);
+   if(!d.dicts||!d.logs)throw new Error("文件格式不符");
+   if(!confirm("导入将覆盖当前全部数据（字典/历史/设置），继续？"))return;
+   DB.dicts=d.dicts;DB.recent=d.recent||{};DB.logs=d.logs;DB.seq=d.seq||{};DB.settings=d.settings||DB.settings;DB.crews=d.crews||DB.crews;
+   saveAll();curId=null;
+   initSettings();renderHistory();loadLog({date:todayStr(),recorder:DB.settings.defRec,stopNone:true,undoneNone:true});
+   $("#projName").textContent=DB.settings.proj;
+   toast("导入成功："+DB.logs.length+"条日志");
+  }catch(e){toast("导入失败："+e.message,1);}
+ };
+ r.readAsText(file,"utf-8");
+}
+let draftTimer;
+function draftSoon(){clearTimeout(draftTimer);draftTimer=setTimeout(()=>{LS.set("rz_draft",{id:curId,data:collect()});},800);}
+
+/* ================= 事件绑定与启动 ================= */
+function bind(){
+ document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addRow(b.dataset.add));
+ $("#btnGen").onclick=genAndCopy;
+ $("#btnSave").onclick=saveLog;
+ $("#btnMenu").onclick=e=>{e.stopPropagation();$("#menu").hidden=!$("#menu").hidden;};
+ document.addEventListener("click",e=>{if(!e.target.closest("#menu")&&!e.target.closest("#btnMenu"))$("#menu").hidden=true;});
+ $("#mNew").onclick=()=>{$("#menu").hidden=true;newLog();};
+ $("#mYest").onclick=()=>{$("#menu").hidden=true;copyYesterday();};
+ $("#mHist").onclick=()=>{$("#menu").hidden=true;$("#secHistory").open=true;$("#secHistory").scrollIntoView();};
+ $("#mSet").onclick=()=>{$("#menu").hidden=true;$("#secSettings").open=true;$("#secSettings").scrollIntoView();};
+ $("#mExp").onclick=()=>{$("#menu").hidden=true;exportBackup();};
+ $("#mImp").onclick=()=>{$("#menu").hidden=true;$("#fileImp").click();};
+ $("#fileImp").onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value="";};
+ $("#mCopy").onclick=()=>doCopy($("#modalText").value);
+ $("#mTxt").onclick=()=>download((lastNo||"施工日志")+".txt",$("#modalText").value);
+ $("#mPrint").onclick=doPrint;
+ $("#mClose").onclick=closeModal;
+ $("#modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
+ $("#btnCrew").onclick=()=>{
+  const box=el("div");
+  DB.crews.forEach(c=>{const b=el("button","mini",esc(c.name)+"（"+c.items.map(x=>x[0]+"×"+x[1]).join("、")+"）");b.style.cssText="display:block;width:100%;text-align:left;margin:4px 0";b.onclick=()=>{applyCrew(c);closeModal();};box.append(b);});
+  $("#modalTitle").textContent="选择班组一键填入";$("#modalText").hidden=true;
+  const holder=el("div");holder.id="phraseHolder";holder.style.cssText="overflow:auto;max-height:55vh";holder.append(box);
+  $("#modal .box").insertBefore(holder,$("#modal .mops"));$("#modal").hidden=false;
+ };
+ $("#btnPhrase").onclick=openPhraseLib;
+ document.addEventListener("input",e=>{if(e.target.closest("main")){draftSoon();if(e.target.closest("#rows-labor"))updateLaborSum();}});
+ document.addEventListener("change",e=>{if(e.target.closest("main")){draftSoon();if(e.target.closest("#rows-labor"))updateLaborSum();}});
+ if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+ }
+}
+function boot(){
+ initDB();
+ $("#projName").textContent=DB.settings.proj;
+ initHeader();initSettings();bind();renderHistory();
+ const draft=LS.get("rz_draft",null);
+ if(draft&&draft.data){loadLog(draft.data,true);curId=draft.id||null;if(curId){const g=DB.logs.find(x=>x.id===curId);if(g)$("#fNo").value=g.no;}}
+ else loadLog({date:todayStr(),recorder:DB.settings.defRec,stopNone:true,undoneNone:true});
+ updateLaborSum();
+}
+boot();
+</script>
+</body>
+</html>

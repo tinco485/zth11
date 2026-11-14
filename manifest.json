@@ -1,0 +1,16 @@
+{
+  "name": "施工日志",
+  "short_name": "施工日志",
+  "description": "石家庄中医院项目施工日志编写工具：字典录入、一键成文、本地保存",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f5f9",
+  "theme_color": "#1a56b0",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
